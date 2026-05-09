@@ -12,6 +12,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { logAudit } from "@/lib/audit";
 import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TablePagination } from "@/components/TablePagination";
+import { usePagination } from "@/hooks/usePagination";
 
 interface Product {
   id: string;
@@ -65,6 +67,7 @@ export default function Products() {
     if (q && !r.title.toLowerCase().includes(q.toLowerCase())) return false;
     return true;
   });
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 25, `${q}|${tab}|${category}`);
 
   const setStatus = async (ids: string[], status: string, action: string) => {
     const { error } = await supabase.from("products").update({ status: status as "pending" | "approved" | "rejected" | "unpublished" | "out_of_stock" }).in("id", ids);
@@ -143,7 +146,7 @@ export default function Products() {
                   <TableRow key={i}><TableCell colSpan={8}><Skeleton className="h-6" /></TableCell></TableRow>
                 )) : filtered.length === 0 ? (
                   <TableRow><TableCell colSpan={8} className="text-center text-neutral-4 py-12">No products</TableCell></TableRow>
-                ) : filtered.map((p) => (
+                ) : paged.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell><Checkbox checked={selected.has(p.id)} onCheckedChange={() => toggle(p.id)} /></TableCell>
                     <TableCell className="font-medium text-neutral-1">{p.title}</TableCell>
@@ -181,6 +184,7 @@ export default function Products() {
               </TableBody>
             </Table>
           </div>
+          <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
         </CardContent>
       </Card>
     </div>
