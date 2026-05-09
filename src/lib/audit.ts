@@ -8,6 +8,6 @@ export async function logAudit(action: string, entity_type: string, entity_id?: 
     action,
     entity_type,
     entity_id: entity_id ?? null,
-    metadata: metadata ?? null,
+    metadata: (metadata ?? null) as never,
   });
 }
