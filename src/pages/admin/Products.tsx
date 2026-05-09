@@ -67,7 +67,7 @@ export default function Products() {
   });
 
   const setStatus = async (ids: string[], status: string, action: string) => {
-    const { error } = await supabase.from("products").update({ status }).in("id", ids);
+    const { error } = await supabase.from("products").update({ status: status as "pending" | "approved" | "rejected" | "unpublished" | "out_of_stock" }).in("id", ids);
     if (error) return toast({ title: "Failed", description: error.message, variant: "destructive" });
     await Promise.all(ids.map((id) => logAudit(`product.${action}`, "product", id)));
     toast({ title: `${ids.length} product(s) ${action}` });

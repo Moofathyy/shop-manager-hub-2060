@@ -54,7 +54,7 @@ export default function Orders() {
   });
 
   const setStatusOf = async (id: string, newStatus: string) => {
-    const { error } = await supabase.from("orders").update({ status: newStatus }).eq("id", id);
+    const { error } = await supabase.from("orders").update({ status: newStatus as "pending" | "confirmed" | "shipped" | "delivered" | "cancelled" | "returned" | "disputed" }).eq("id", id);
     if (error) return toast({ title: "Failed", description: error.message, variant: "destructive" });
     await logAudit(`order.${newStatus}`, "order", id);
     toast({ title: `Order updated` });
