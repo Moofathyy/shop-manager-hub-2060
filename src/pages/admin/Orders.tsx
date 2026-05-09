@@ -115,7 +115,7 @@ export default function Orders() {
                   <TableRow><TableCell colSpan={8} className="text-center text-neutral-4 py-12">No orders</TableCell></TableRow>
                 ) : paged.map((o) => (
                   <TableRow key={o.id}>
-                    <TableCell className="font-mono text-caption">{o.id.slice(0, 8)}</TableCell>
+                    <TableCell className="font-mono text-caption"><Link to={`/admin/orders/${o.id}`} className="hover:text-primary hover:underline">{o.id.slice(0, 8)}</Link></TableCell>
                     <TableCell className="text-neutral-1">{o.shopper_name}</TableCell>
                     <TableCell className="text-neutral-2">{o.store_name}</TableCell>
                     <TableCell className="text-right font-medium">${Number(o.total).toFixed(2)}</TableCell>

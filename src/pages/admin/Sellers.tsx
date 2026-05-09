@@ -134,7 +134,7 @@ export default function Sellers() {
                   <TableRow><TableCell colSpan={8} className="text-center text-neutral-4 py-12">No sellers</TableCell></TableRow>
                 ) : paged.map((s) => (
                   <TableRow key={s.user_id}>
-                    <TableCell className="font-medium text-neutral-1">{s.store_name}</TableCell>
+                    <TableCell className="font-medium text-neutral-1"><Link to={`/admin/sellers/${s.user_id}`} className="hover:text-primary hover:underline">{s.store_name}</Link></TableCell>
                     <TableCell className="text-neutral-2">{s.business_name ?? "—"}</TableCell>
                     <TableCell className="text-right">{s.product_count}</TableCell>
                     <TableCell className="text-right">${Number(s.total_revenue).toFixed(2)}</TableCell>

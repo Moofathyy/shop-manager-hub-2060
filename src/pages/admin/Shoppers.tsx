@@ -145,7 +145,7 @@ export default function Shoppers() {
                   <TableRow><TableCell colSpan={8} className="text-center text-neutral-4 py-12">No shoppers yet</TableCell></TableRow>
                 ) : paged.map((s) => (
                   <TableRow key={s.id}>
-                    <TableCell className="font-medium text-neutral-1">{s.full_name ?? "—"}</TableCell>
+                    <TableCell className="font-medium text-neutral-1"><Link to={`/admin/shoppers/${s.id}`} className="hover:text-primary hover:underline">{s.full_name ?? "—"}</Link></TableCell>
                     <TableCell className="text-neutral-2">{s.phone ?? "—"}</TableCell>
                     <TableCell className="text-neutral-2">{s.country ?? "—"}</TableCell>
                     <TableCell className="text-right">{s.total_orders}</TableCell>
