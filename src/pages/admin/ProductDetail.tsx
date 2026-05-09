@@ -56,7 +56,7 @@ export default function ProductDetail() {
   if (loading) return <Skeleton className="h-96" />;
   if (!p) return <div className="text-neutral-2">Product not found.</div>;
 
-  const statusVariant = (p.status === "approved" ? "success" : p.status === "rejected" ? "destructive" : p.status === "pending" ? "warning" : "secondary") as const;
+  const statusVariant = (p.status === "approved" ? "success" : p.status === "rejected" ? "destructive" : p.status === "pending" ? "warning" : "secondary");
 
   return (
     <div className="space-y-6">

@@ -53,7 +53,7 @@ export default function SellerDetail() {
   if (loading) return <Skeleton className="h-96" />;
   if (!seller) return <div className="text-neutral-2">Seller not found.</div>;
 
-  const apprVariant = (seller.approval_status === "approved" ? "success" : seller.approval_status === "rejected" ? "destructive" : "warning") as const;
+  const apprVariant = (seller.approval_status === "approved" ? "success" : seller.approval_status === "rejected" ? "destructive" : "warning");
 
   return (
     <div className="space-y-6">
