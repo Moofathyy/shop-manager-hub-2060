@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { AdminRoute } from "@/components/AdminRoute";
 import { Navigate } from "react-router-dom";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
 import AdminLayout from "./layouts/AdminLayout";
 import Overview from "./pages/admin/Overview";
 import Shoppers from "./pages/admin/Shoppers";
