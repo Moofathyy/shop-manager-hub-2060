@@ -12,6 +12,8 @@ import {
 import { logAudit } from "@/lib/audit";
 import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TablePagination } from "@/components/TablePagination";
+import { usePagination } from "@/hooks/usePagination";
 
 interface Application {
   id: string;
@@ -42,6 +44,7 @@ export default function Merchants() {
   useEffect(() => { load(); }, []);
 
   const filtered = rows.filter((r) => tab === "all" || r.status === tab);
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 10, tab);
 
   const decide = async (app: Application, status: Application["status"], reason?: string) => {
     const { error } = await supabase.from("merchant_applications").update({
@@ -79,7 +82,7 @@ export default function Merchants() {
         <Card><CardContent className="p-12 text-center text-neutral-4">No applications</CardContent></Card>
       ) : (
         <div className="grid gap-4">
-          {filtered.map((a) => (
+          {paged.map((a) => (
             <Card key={a.id}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between flex-wrap gap-4">
@@ -123,6 +126,7 @@ export default function Merchants() {
               </CardContent>
             </Card>
           ))}
+          <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} pageSizeOptions={[5, 10, 25, 50]} />
         </div>
       )}
     </div>
