@@ -126,6 +126,7 @@ function TransactionsTab() {
           </TableBody>
         </Table>
       </div>
+      <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
     </CardContent></Card>
   );
 }
