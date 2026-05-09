@@ -6,14 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function Auth() {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
   const [busy, setBusy] = useState(false);
 
   if (loading) return null;
@@ -37,19 +35,6 @@ export default function Auth() {
       navigate("/admin");
     }
   };
-
-  const signUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setBusy(true);
-    const { error } = await supabase.auth.signUp({
-      email, password,
-      options: { emailRedirectTo: `${window.location.origin}/admin`, data: { full_name: fullName } },
-    });
-    setBusy(false);
-    if (error) return toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
-    toast({ title: "Account created", description: "Ask a super admin to grant you admin access." });
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-primary-bg p-6">
       <div className="w-full max-w-md">
@@ -60,49 +45,22 @@ export default function Auth() {
         </div>
         <Card className="shadow-elevation-2">
           <CardContent className="p-6">
-            <Tabs defaultValue="signin">
-              <TabsList className="grid grid-cols-2 mb-6 bg-neutral-7">
-                <TabsTrigger value="signin">Sign in</TabsTrigger>
-                <TabsTrigger value="signup">Sign up</TabsTrigger>
-              </TabsList>
-              <TabsContent value="signin">
-                <form onSubmit={signIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-label text-neutral-2">Email</label>
-                    <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@example.com" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-label text-neutral-2">Password</label>
-                    <Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
-                  </div>
-                  <Button type="submit" disabled={busy} className="w-full">
-                    {busy ? "Signing in…" : "Sign in"}
-                  </Button>
-                </form>
-              </TabsContent>
-              <TabsContent value="signup">
-                <form onSubmit={signUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-label text-neutral-2">Full name</label>
-                    <Input required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jane Admin" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-label text-neutral-2">Email</label>
-                    <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-label text-neutral-2">Password</label>
-                    <Input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
-                  </div>
-                  <Button type="submit" disabled={busy} className="w-full">
-                    {busy ? "Creating…" : "Create account"}
-                  </Button>
-                  <p className="text-caption text-neutral-4 text-center">
-                    New accounts are created as shoppers by default. A super admin must promote you.
-                  </p>
-                </form>
-              </TabsContent>
-            </Tabs>
+            <form onSubmit={signIn} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-label text-neutral-2">Email</label>
+                <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@example.com" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-label text-neutral-2">Password</label>
+                <Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+              </div>
+              <Button type="submit" disabled={busy} className="w-full">
+                {busy ? "Signing in…" : "Sign in"}
+              </Button>
+              <p className="text-caption text-neutral-4 text-center pt-2">
+                Demo: <span className="text-neutral-2">demo@ejada.test</span> / <span className="text-neutral-2">Demo@12345</span>
+              </p>
+            </form>
           </CardContent>
         </Card>
       </div>
