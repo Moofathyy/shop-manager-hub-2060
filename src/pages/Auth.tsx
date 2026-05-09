@@ -60,49 +60,22 @@ export default function Auth() {
         </div>
         <Card className="shadow-elevation-2">
           <CardContent className="p-6">
-            <Tabs defaultValue="signin">
-              <TabsList className="grid grid-cols-2 mb-6 bg-neutral-7">
-                <TabsTrigger value="signin">Sign in</TabsTrigger>
-                <TabsTrigger value="signup">Sign up</TabsTrigger>
-              </TabsList>
-              <TabsContent value="signin">
-                <form onSubmit={signIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-label text-neutral-2">Email</label>
-                    <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@example.com" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-label text-neutral-2">Password</label>
-                    <Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
-                  </div>
-                  <Button type="submit" disabled={busy} className="w-full">
-                    {busy ? "Signing in…" : "Sign in"}
-                  </Button>
-                </form>
-              </TabsContent>
-              <TabsContent value="signup">
-                <form onSubmit={signUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-label text-neutral-2">Full name</label>
-                    <Input required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jane Admin" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-label text-neutral-2">Email</label>
-                    <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-label text-neutral-2">Password</label>
-                    <Input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
-                  </div>
-                  <Button type="submit" disabled={busy} className="w-full">
-                    {busy ? "Creating…" : "Create account"}
-                  </Button>
-                  <p className="text-caption text-neutral-4 text-center">
-                    New accounts are created as shoppers by default. A super admin must promote you.
-                  </p>
-                </form>
-              </TabsContent>
-            </Tabs>
+            <form onSubmit={signIn} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-label text-neutral-2">Email</label>
+                <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@example.com" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-label text-neutral-2">Password</label>
+                <Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+              </div>
+              <Button type="submit" disabled={busy} className="w-full">
+                {busy ? "Signing in…" : "Sign in"}
+              </Button>
+              <p className="text-caption text-neutral-4 text-center pt-2">
+                Demo: <span className="text-neutral-2">demo@ejada.test</span> / <span className="text-neutral-2">Demo@12345</span>
+              </p>
+            </form>
           </CardContent>
         </Card>
       </div>
