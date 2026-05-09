@@ -38,8 +38,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // Then existing session
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
+    // Then existing session — auto sign-in as demo admin if no session
+    supabase.auth.getSession().then(async ({ data: { session: s } }) => {
+      if (!s) {
+        const { data } = await supabase.auth.signInWithPassword({
+          email: "demo@ejada.test",
+          password: "Demo@12345",
+        });
+        s = data.session;
+      }
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
