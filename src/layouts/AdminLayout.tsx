@@ -61,6 +61,22 @@ export default function AdminLayout() {
               </DropdownMenuContent>
             </DropdownMenu>
           </header>
+          <nav className="hidden md:flex items-center gap-1 text-caption text-neutral-4 px-6 pt-4">
+            {segments.map((seg, i) => {
+              const path = "/" + segments.slice(0, i + 1).join("/");
+              const isLast = i === segments.length - 1;
+              return (
+                <span key={path} className="flex items-center gap-1">
+                  {i > 0 && <ChevronRight className="h-3 w-3" />}
+                  {isLast ? (
+                    <span className="text-neutral-2 font-semibold">{labels[seg] ?? seg}</span>
+                  ) : (
+                    <Link to={path} className="hover:text-primary">{labels[seg] ?? seg}</Link>
+                  )}
+                </span>
+              );
+            })}
+          </nav>
           <main className="flex-1 p-6 overflow-x-hidden">
             <Outlet />
           </main>
