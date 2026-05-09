@@ -14,6 +14,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { logAudit } from "@/lib/audit";
 import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TablePagination } from "@/components/TablePagination";
+import { usePagination } from "@/hooks/usePagination";
 
 interface Ticket {
   id: string; user_id: string; subject: string; type: string;
@@ -66,6 +68,7 @@ export default function Support() {
     if (q && !r.subject.toLowerCase().includes(q.toLowerCase())) return false;
     return true;
   });
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 25, `${q}|${status}|${priority}`);
 
   return (
     <div className="space-y-6">
@@ -111,7 +114,7 @@ export default function Support() {
               <TableBody>
                 {loading ? <TableRow><TableCell colSpan={7}><Skeleton className="h-6" /></TableCell></TableRow> :
                   filtered.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center text-neutral-4 py-12">No tickets</TableCell></TableRow> :
-                    filtered.map((t) => {
+                    paged.map((t) => {
                       const sla = t.sla_due_at ? new Date(t.sla_due_at).getTime() - Date.now() : null;
                       const slaBreached = sla !== null && sla < 0;
                       return (
@@ -133,6 +136,7 @@ export default function Support() {
               </TableBody>
             </Table>
           </div>
+          <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
         </CardContent>
       </Card>
 
