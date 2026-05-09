@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -68,7 +69,7 @@ export default function Sellers() {
     if (q && !r.store_name.toLowerCase().includes(q.toLowerCase())) return false;
     return true;
   });
-  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 25, `${q}|${tab}`);
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 10, `${q}|${tab}`);
 
   const decide = async (id: string, decision: "approved" | "rejected") => {
     const { error } = await supabase.from("seller_profiles").update({ approval_status: decision }).eq("user_id", id);
@@ -133,7 +134,7 @@ export default function Sellers() {
                   <TableRow><TableCell colSpan={8} className="text-center text-neutral-4 py-12">No sellers</TableCell></TableRow>
                 ) : paged.map((s) => (
                   <TableRow key={s.user_id}>
-                    <TableCell className="font-medium text-neutral-1">{s.store_name}</TableCell>
+                    <TableCell className="font-medium text-neutral-1"><Link to={`/admin/sellers/${s.user_id}`} className="hover:text-primary hover:underline">{s.store_name}</Link></TableCell>
                     <TableCell className="text-neutral-2">{s.business_name ?? "—"}</TableCell>
                     <TableCell className="text-right">{s.product_count}</TableCell>
                     <TableCell className="text-right">${Number(s.total_revenue).toFixed(2)}</TableCell>

@@ -41,7 +41,7 @@ export default function Audit() {
   const filtered = rows.filter((r) =>
     !q || r.action.toLowerCase().includes(q.toLowerCase()) || r.entity_type.toLowerCase().includes(q.toLowerCase())
   );
-  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 25, q);
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 10, q);
 
   return (
     <div className="space-y-6">

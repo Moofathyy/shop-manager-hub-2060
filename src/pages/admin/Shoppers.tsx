@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -81,7 +82,7 @@ export default function Shoppers() {
     if (q && !((r.full_name ?? "").toLowerCase().includes(q.toLowerCase()) || (r.phone ?? "").includes(q))) return false;
     return true;
   });
-  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 25, `${q}|${status}`);
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 10, `${q}|${status}`);
 
   const updateStatus = async (id: string, newStatus: Status, action: string) => {
     const { error } = await supabase.from("profiles").update({ status: newStatus }).eq("id", id);
@@ -144,7 +145,7 @@ export default function Shoppers() {
                   <TableRow><TableCell colSpan={8} className="text-center text-neutral-4 py-12">No shoppers yet</TableCell></TableRow>
                 ) : paged.map((s) => (
                   <TableRow key={s.id}>
-                    <TableCell className="font-medium text-neutral-1">{s.full_name ?? "—"}</TableCell>
+                    <TableCell className="font-medium text-neutral-1"><Link to={`/admin/shoppers/${s.id}`} className="hover:text-primary hover:underline">{s.full_name ?? "—"}</Link></TableCell>
                     <TableCell className="text-neutral-2">{s.phone ?? "—"}</TableCell>
                     <TableCell className="text-neutral-2">{s.country ?? "—"}</TableCell>
                     <TableCell className="text-right">{s.total_orders}</TableCell>

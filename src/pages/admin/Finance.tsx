@@ -78,7 +78,7 @@ function TransactionsTab() {
   }, []);
 
   const filtered = rows.filter((r) => (type === "all" || r.type === type) && (!q || r.id.includes(q) || (r.provider ?? "").includes(q)));
-  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 25, `${q}|${type}`);
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 10, `${q}|${type}`);
 
   return (
     <Card><CardContent className="p-4">
@@ -158,7 +158,7 @@ function PayoutsTab() {
     load();
   };
 
-  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(rows, 25);
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(rows, 10);
 
   return (
     <Card><CardContent className="p-4">
@@ -226,7 +226,7 @@ function RefundsTab() {
     load();
   };
 
-  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(rows, 25);
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(rows, 10);
 
   return (
     <Card><CardContent className="p-4">
