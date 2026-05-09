@@ -158,6 +158,8 @@ function PayoutsTab() {
     load();
   };
 
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(rows, 25);
+
   return (
     <Card><CardContent className="p-4">
       <div className="overflow-x-auto rounded-input border border-neutral-6">
@@ -172,7 +174,7 @@ function PayoutsTab() {
           <TableBody>
             {loading ? <TableRow><TableCell colSpan={6}><Skeleton className="h-6" /></TableCell></TableRow> :
               rows.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center text-neutral-4 py-12">No payouts in the queue</TableCell></TableRow> :
-                rows.map((p) => (
+                paged.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.store_name ?? p.seller_id.slice(0,8)}</TableCell>
                     <TableCell className="text-right">${Number(p.amount).toFixed(2)}</TableCell>
@@ -197,6 +199,7 @@ function PayoutsTab() {
           </TableBody>
         </Table>
       </div>
+      <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
     </CardContent></Card>
   );
 }
