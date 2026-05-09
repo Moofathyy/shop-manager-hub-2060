@@ -1,0 +1,3 @@
+TRUNCATE merchant_applications, seller_profiles, products, order_items, orders, transactions, reviews, ticket_messages, tickets, disputes, refunds, payouts, audit_log RESTART IDENTITY CASCADE;
+DELETE FROM user_roles WHERE role <> 'super_admin';
+GRANT INSERT, UPDATE, DELETE ON merchant_applications, seller_profiles, products, order_items, orders, transactions, reviews, ticket_messages, tickets, disputes, refunds, payouts, audit_log, profiles, user_roles TO postgres;
