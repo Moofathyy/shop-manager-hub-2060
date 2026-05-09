@@ -16,6 +16,8 @@ import { downloadCSV } from "@/lib/csv";
 import { logAudit } from "@/lib/audit";
 import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TablePagination } from "@/components/TablePagination";
+import { usePagination } from "@/hooks/usePagination";
 
 type Txn = { id: string; user_id: string | null; order_id: string | null; type: string; amount: number; currency: string; status: string; provider: string | null; flagged: boolean; flag_reason: string | null; created_at: string };
 type Payout = { id: string; seller_id: string; amount: number; status: string; scheduled_for: string | null; processed_at: string | null; hold_reason: string | null; created_at: string; store_name?: string };
@@ -76,6 +78,7 @@ function TransactionsTab() {
   }, []);
 
   const filtered = rows.filter((r) => (type === "all" || r.type === type) && (!q || r.id.includes(q) || (r.provider ?? "").includes(q)));
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 25, `${q}|${type}`);
 
   return (
     <Card><CardContent className="p-4">
@@ -110,7 +113,7 @@ function TransactionsTab() {
           <TableBody>
             {loading ? <TableRow><TableCell colSpan={6}><Skeleton className="h-6" /></TableCell></TableRow> :
               filtered.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center text-neutral-4 py-12">No transactions</TableCell></TableRow> :
-                filtered.map((t) => (
+                paged.map((t) => (
                   <TableRow key={t.id}>
                     <TableCell className="font-mono text-caption">{t.id.slice(0, 8)}</TableCell>
                     <TableCell>{txnBadge(t.type)}</TableCell>
