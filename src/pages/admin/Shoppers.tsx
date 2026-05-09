@@ -19,6 +19,8 @@ import { downloadCSV } from "@/lib/csv";
 import { logAudit } from "@/lib/audit";
 import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TablePagination } from "@/components/TablePagination";
+import { usePagination } from "@/hooks/usePagination";
 
 type Status = "active" | "suspended" | "banned";
 
@@ -79,6 +81,7 @@ export default function Shoppers() {
     if (q && !((r.full_name ?? "").toLowerCase().includes(q.toLowerCase()) || (r.phone ?? "").includes(q))) return false;
     return true;
   });
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 25, `${q}|${status}`);
 
   const updateStatus = async (id: string, newStatus: Status, action: string) => {
     const { error } = await supabase.from("profiles").update({ status: newStatus }).eq("id", id);
@@ -139,7 +142,7 @@ export default function Shoppers() {
                   ))
                 ) : filtered.length === 0 ? (
                   <TableRow><TableCell colSpan={8} className="text-center text-neutral-4 py-12">No shoppers yet</TableCell></TableRow>
-                ) : filtered.map((s) => (
+                ) : paged.map((s) => (
                   <TableRow key={s.id}>
                     <TableCell className="font-medium text-neutral-1">{s.full_name ?? "—"}</TableCell>
                     <TableCell className="text-neutral-2">{s.phone ?? "—"}</TableCell>
@@ -176,6 +179,7 @@ export default function Shoppers() {
               </TableBody>
             </Table>
           </div>
+          <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
         </CardContent>
       </Card>
     </div>

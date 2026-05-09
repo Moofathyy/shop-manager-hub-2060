@@ -8,6 +8,8 @@ import { Search, Download } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { downloadCSV } from "@/lib/csv";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TablePagination } from "@/components/TablePagination";
+import { usePagination } from "@/hooks/usePagination";
 
 interface Log {
   id: string; admin_id: string | null; action: string; entity_type: string;
@@ -39,6 +41,7 @@ export default function Audit() {
   const filtered = rows.filter((r) =>
     !q || r.action.toLowerCase().includes(q.toLowerCase()) || r.entity_type.toLowerCase().includes(q.toLowerCase())
   );
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 25, q);
 
   return (
     <div className="space-y-6">
@@ -72,7 +75,7 @@ export default function Audit() {
               <TableBody>
                 {loading ? <TableRow><TableCell colSpan={5}><Skeleton className="h-6" /></TableCell></TableRow> :
                   filtered.length === 0 ? <TableRow><TableCell colSpan={5} className="text-center text-neutral-4 py-12">No activity yet</TableCell></TableRow> :
-                    filtered.map((l) => (
+                    paged.map((l) => (
                       <TableRow key={l.id}>
                         <TableCell className="text-caption text-neutral-2 whitespace-nowrap">{new Date(l.created_at).toLocaleString()}</TableCell>
                         <TableCell className="text-neutral-1">{l.admin_name}</TableCell>
@@ -87,6 +90,7 @@ export default function Audit() {
               </TableBody>
             </Table>
           </div>
+          <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
         </CardContent>
       </Card>
     </div>

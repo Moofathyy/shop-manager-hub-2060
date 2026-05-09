@@ -8,6 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { logAudit } from "@/lib/audit";
 import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TablePagination } from "@/components/TablePagination";
+import { usePagination } from "@/hooks/usePagination";
 
 interface Category { id: string; name: string; slug: string; parent_id: string | null; sort_order: number; }
 
@@ -44,6 +46,8 @@ export default function Categories() {
     load();
   };
 
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(rows, 25);
+
   return (
     <div className="space-y-6">
       <div>
@@ -70,7 +74,7 @@ export default function Categories() {
               <TableBody>
                 {loading ? <TableRow><TableCell colSpan={4}><Skeleton className="h-6" /></TableCell></TableRow> :
                   rows.length === 0 ? <TableRow><TableCell colSpan={4} className="text-center text-neutral-4 py-8">No categories</TableCell></TableRow> :
-                    rows.map((c) => (
+                    paged.map((c) => (
                       <TableRow key={c.id}>
                         <TableCell className="font-medium">{c.name}</TableCell>
                         <TableCell className="text-neutral-2">{c.slug}</TableCell>
@@ -86,6 +90,7 @@ export default function Categories() {
               </TableBody>
             </Table>
           </div>
+          <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
         </CardContent>
       </Card>
     </div>

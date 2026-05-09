@@ -16,6 +16,8 @@ import { downloadCSV } from "@/lib/csv";
 import { logAudit } from "@/lib/audit";
 import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TablePagination } from "@/components/TablePagination";
+import { usePagination } from "@/hooks/usePagination";
 
 type Txn = { id: string; user_id: string | null; order_id: string | null; type: string; amount: number; currency: string; status: string; provider: string | null; flagged: boolean; flag_reason: string | null; created_at: string };
 type Payout = { id: string; seller_id: string; amount: number; status: string; scheduled_for: string | null; processed_at: string | null; hold_reason: string | null; created_at: string; store_name?: string };
@@ -76,6 +78,7 @@ function TransactionsTab() {
   }, []);
 
   const filtered = rows.filter((r) => (type === "all" || r.type === type) && (!q || r.id.includes(q) || (r.provider ?? "").includes(q)));
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 25, `${q}|${type}`);
 
   return (
     <Card><CardContent className="p-4">
@@ -110,7 +113,7 @@ function TransactionsTab() {
           <TableBody>
             {loading ? <TableRow><TableCell colSpan={6}><Skeleton className="h-6" /></TableCell></TableRow> :
               filtered.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center text-neutral-4 py-12">No transactions</TableCell></TableRow> :
-                filtered.map((t) => (
+                paged.map((t) => (
                   <TableRow key={t.id}>
                     <TableCell className="font-mono text-caption">{t.id.slice(0, 8)}</TableCell>
                     <TableCell>{txnBadge(t.type)}</TableCell>
@@ -123,6 +126,7 @@ function TransactionsTab() {
           </TableBody>
         </Table>
       </div>
+      <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
     </CardContent></Card>
   );
 }
@@ -154,6 +158,8 @@ function PayoutsTab() {
     load();
   };
 
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(rows, 25);
+
   return (
     <Card><CardContent className="p-4">
       <div className="overflow-x-auto rounded-input border border-neutral-6">
@@ -168,7 +174,7 @@ function PayoutsTab() {
           <TableBody>
             {loading ? <TableRow><TableCell colSpan={6}><Skeleton className="h-6" /></TableCell></TableRow> :
               rows.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center text-neutral-4 py-12">No payouts in the queue</TableCell></TableRow> :
-                rows.map((p) => (
+                paged.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.store_name ?? p.seller_id.slice(0,8)}</TableCell>
                     <TableCell className="text-right">${Number(p.amount).toFixed(2)}</TableCell>
@@ -193,6 +199,7 @@ function PayoutsTab() {
           </TableBody>
         </Table>
       </div>
+      <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
     </CardContent></Card>
   );
 }
@@ -219,6 +226,8 @@ function RefundsTab() {
     load();
   };
 
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(rows, 25);
+
   return (
     <Card><CardContent className="p-4">
       <div className="overflow-x-auto rounded-input border border-neutral-6">
@@ -233,7 +242,7 @@ function RefundsTab() {
           <TableBody>
             {loading ? <TableRow><TableCell colSpan={5}><Skeleton className="h-6" /></TableCell></TableRow> :
               rows.length === 0 ? <TableRow><TableCell colSpan={5} className="text-center text-neutral-4 py-12">No refund requests</TableCell></TableRow> :
-                rows.map((r) => (
+                paged.map((r) => (
                   <TableRow key={r.id}>
                     <TableCell className="font-mono text-caption">{r.order_id.slice(0, 8)}</TableCell>
                     <TableCell className="text-right">${Number(r.amount).toFixed(2)}</TableCell>
@@ -255,6 +264,7 @@ function RefundsTab() {
           </TableBody>
         </Table>
       </div>
+      <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
     </CardContent></Card>
   );
 }
