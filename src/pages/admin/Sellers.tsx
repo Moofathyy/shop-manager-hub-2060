@@ -11,6 +11,8 @@ import { downloadCSV } from "@/lib/csv";
 import { logAudit } from "@/lib/audit";
 import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TablePagination } from "@/components/TablePagination";
+import { usePagination } from "@/hooks/usePagination";
 
 interface Seller {
   user_id: string;
@@ -66,6 +68,7 @@ export default function Sellers() {
     if (q && !r.store_name.toLowerCase().includes(q.toLowerCase())) return false;
     return true;
   });
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 25, `${q}|${tab}`);
 
   const decide = async (id: string, decision: "approved" | "rejected") => {
     const { error } = await supabase.from("seller_profiles").update({ approval_status: decision }).eq("user_id", id);
@@ -128,7 +131,7 @@ export default function Sellers() {
                   <TableRow key={i}><TableCell colSpan={8}><Skeleton className="h-6" /></TableCell></TableRow>
                 )) : filtered.length === 0 ? (
                   <TableRow><TableCell colSpan={8} className="text-center text-neutral-4 py-12">No sellers</TableCell></TableRow>
-                ) : filtered.map((s) => (
+                ) : paged.map((s) => (
                   <TableRow key={s.user_id}>
                     <TableCell className="font-medium text-neutral-1">{s.store_name}</TableCell>
                     <TableCell className="text-neutral-2">{s.business_name ?? "—"}</TableCell>
@@ -168,6 +171,7 @@ export default function Sellers() {
               </TableBody>
             </Table>
           </div>
+          <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
         </CardContent>
       </Card>
     </div>
