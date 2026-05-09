@@ -42,7 +42,7 @@ export default function ShopperDetail() {
   if (!profile) return <div className="text-neutral-2">Shopper not found.</div>;
 
   const totalSpent = orders.reduce((s, o) => s + Number(o.total), 0);
-  const statusVariant = (profile.status === "active" ? "success" : profile.status === "suspended" ? "warning" : "destructive");
+  const statusVariant: "success" | "warning" | "destructive" = (profile.status === "active" ? "success" : profile.status === "suspended" ? "warning" : "destructive");
 
   return (
     <div className="space-y-6">
