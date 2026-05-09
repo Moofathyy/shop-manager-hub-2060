@@ -144,7 +144,7 @@ function PayoutsTab() {
   useEffect(() => { load(); }, []);
 
   const setStatus = async (id: string, status: "paid" | "on_hold" | "processing" | "pending", reason?: string) => {
-    const update: Record<string, unknown> = { status };
+    const update: Partial<{ status: typeof status; processed_at: string; hold_reason: string | null }> = { status };
     if (status === "paid") update.processed_at = new Date().toISOString();
     if (status === "on_hold") update.hold_reason = reason ?? null;
     const { error } = await supabase.from("payouts").update(update).eq("id", id);
