@@ -48,7 +48,7 @@ export default function AdminLayout() {
                   </div>
                   <div className="hidden sm:block text-left">
                     <div className="text-caption text-neutral-2 leading-tight max-w-[140px] truncate">{user?.email}</div>
-                    <div className="text-micro text-neutral-4 leading-tight capitalize">{roles[0]?.replace("_", " ")}</div>
+                    <div className="text-micro text-neutral-4 leading-tight capitalize">{(["super_admin","admin","finance_admin","seller","shopper"].find(r => roles.includes(r as any)) ?? roles[0])?.replace("_", " ")}</div>
                   </div>
                 </button>
               </DropdownMenuTrigger>
