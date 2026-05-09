@@ -82,6 +82,53 @@ export type Database = {
           },
         ]
       }
+      disputes: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string
+          reason: string
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          seller_id: string
+          shopper_id: string
+          status: Database["public"]["Enums"]["dispute_status"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id: string
+          reason: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          seller_id: string
+          shopper_id: string
+          status?: Database["public"]["Enums"]["dispute_status"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string
+          reason?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          seller_id?: string
+          shopper_id?: string
+          status?: Database["public"]["Enums"]["dispute_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disputes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       merchant_applications: {
         Row: {
           created_at: string
@@ -214,6 +261,45 @@ export type Database = {
         }
         Relationships: []
       }
+      payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          hold_reason: string | null
+          id: string
+          notes: string | null
+          processed_at: string | null
+          scheduled_for: string | null
+          seller_id: string
+          status: Database["public"]["Enums"]["payout_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          hold_reason?: string | null
+          id?: string
+          notes?: string | null
+          processed_at?: string | null
+          scheduled_for?: string | null
+          seller_id: string
+          status?: Database["public"]["Enums"]["payout_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          hold_reason?: string | null
+          id?: string
+          notes?: string | null
+          processed_at?: string | null
+          scheduled_for?: string | null
+          seller_id?: string
+          status?: Database["public"]["Enums"]["payout_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category_id: string | null
@@ -312,6 +398,103 @@ export type Database = {
         }
         Relationships: []
       }
+      refunds: {
+        Row: {
+          amount: number
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          notes: string | null
+          order_id: string
+          reason: string
+          requested_by: string | null
+          status: Database["public"]["Enums"]["refund_status"]
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          notes?: string | null
+          order_id: string
+          reason: string
+          requested_by?: string | null
+          status?: Database["public"]["Enums"]["refund_status"]
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string
+          reason?: string
+          requested_by?: string | null
+          status?: Database["public"]["Enums"]["refund_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refunds_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          content: string | null
+          created_at: string
+          flag_reason: string | null
+          id: string
+          order_id: string | null
+          rating: number
+          removed_reason: string | null
+          reviewer_id: string
+          status: Database["public"]["Enums"]["review_status"]
+          target_id: string
+          target_type: Database["public"]["Enums"]["review_target"]
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          flag_reason?: string | null
+          id?: string
+          order_id?: string | null
+          rating: number
+          removed_reason?: string | null
+          reviewer_id: string
+          status?: Database["public"]["Enums"]["review_status"]
+          target_id: string
+          target_type: Database["public"]["Enums"]["review_target"]
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          flag_reason?: string | null
+          id?: string
+          order_id?: string | null
+          rating?: number
+          removed_reason?: string | null
+          reviewer_id?: string
+          status?: Database["public"]["Enums"]["review_status"]
+          target_id?: string
+          target_type?: Database["public"]["Enums"]["review_target"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seller_profiles: {
         Row: {
           address: string | null
@@ -363,6 +546,147 @@ export type Database = {
         }
         Relationships: []
       }
+      ticket_messages: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          is_internal: boolean
+          ticket_id: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean
+          ticket_id: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          id: string
+          internal_notes: string | null
+          priority: Database["public"]["Enums"]["ticket_priority"]
+          related_order_id: string | null
+          sla_due_at: string | null
+          status: Database["public"]["Enums"]["ticket_status"]
+          subject: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          id?: string
+          internal_notes?: string | null
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          related_order_id?: string | null
+          sla_due_at?: string | null
+          status?: Database["public"]["Enums"]["ticket_status"]
+          subject: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          id?: string
+          internal_notes?: string | null
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          related_order_id?: string | null
+          sla_due_at?: string | null
+          status?: Database["public"]["Enums"]["ticket_status"]
+          subject?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_related_order_id_fkey"
+            columns: ["related_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          flag_reason: string | null
+          flagged: boolean
+          id: string
+          order_id: string | null
+          provider: string | null
+          provider_ref: string | null
+          status: Database["public"]["Enums"]["txn_status"]
+          type: Database["public"]["Enums"]["txn_type"]
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          flag_reason?: string | null
+          flagged?: boolean
+          id?: string
+          order_id?: string | null
+          provider?: string | null
+          provider_ref?: string | null
+          status?: Database["public"]["Enums"]["txn_status"]
+          type: Database["public"]["Enums"]["txn_type"]
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          flag_reason?: string | null
+          flagged?: boolean
+          id?: string
+          order_id?: string | null
+          provider?: string | null
+          provider_ref?: string | null
+          status?: Database["public"]["Enums"]["txn_status"]
+          type?: Database["public"]["Enums"]["txn_type"]
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -397,6 +721,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_finance_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role:
@@ -408,6 +733,13 @@ export type Database = {
         | "shopper"
         | "seller"
       approval_status: "pending" | "approved" | "rejected" | "needs_info"
+      dispute_status:
+        | "open"
+        | "in_review"
+        | "resolved_shopper"
+        | "resolved_seller"
+        | "resolved_split"
+        | "closed"
       kyc_status: "not_submitted" | "submitted" | "verified" | "failed"
       order_status:
         | "pending"
@@ -417,12 +749,20 @@ export type Database = {
         | "cancelled"
         | "returned"
         | "disputed"
+      payout_status: "pending" | "processing" | "paid" | "on_hold" | "failed"
       product_status:
         | "pending"
         | "approved"
         | "rejected"
         | "unpublished"
         | "out_of_stock"
+      refund_status: "pending" | "approved" | "rejected" | "processed"
+      review_status: "published" | "flagged" | "removed"
+      review_target: "product" | "seller"
+      ticket_priority: "low" | "medium" | "high" | "urgent"
+      ticket_status: "open" | "in_progress" | "waiting" | "resolved" | "closed"
+      txn_status: "pending" | "succeeded" | "failed" | "cancelled"
+      txn_type: "payment" | "payout" | "refund" | "chargeback"
       user_status: "active" | "suspended" | "banned"
     }
     CompositeTypes: {
@@ -561,6 +901,14 @@ export const Constants = {
         "seller",
       ],
       approval_status: ["pending", "approved", "rejected", "needs_info"],
+      dispute_status: [
+        "open",
+        "in_review",
+        "resolved_shopper",
+        "resolved_seller",
+        "resolved_split",
+        "closed",
+      ],
       kyc_status: ["not_submitted", "submitted", "verified", "failed"],
       order_status: [
         "pending",
@@ -571,6 +919,7 @@ export const Constants = {
         "returned",
         "disputed",
       ],
+      payout_status: ["pending", "processing", "paid", "on_hold", "failed"],
       product_status: [
         "pending",
         "approved",
@@ -578,6 +927,13 @@ export const Constants = {
         "unpublished",
         "out_of_stock",
       ],
+      refund_status: ["pending", "approved", "rejected", "processed"],
+      review_status: ["published", "flagged", "removed"],
+      review_target: ["product", "seller"],
+      ticket_priority: ["low", "medium", "high", "urgent"],
+      ticket_status: ["open", "in_progress", "waiting", "resolved", "closed"],
+      txn_status: ["pending", "succeeded", "failed", "cancelled"],
+      txn_type: ["payment", "payout", "refund", "chargeback"],
       user_status: ["active", "suspended", "banned"],
     },
   },
