@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -150,7 +150,7 @@ export default function Products() {
                 ) : paged.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell><Checkbox checked={selected.has(p.id)} onCheckedChange={() => toggle(p.id)} /></TableCell>
-                    <TableCell className="font-medium text-neutral-1">{p.title}</TableCell>
+                    <TableCell className="font-medium text-neutral-1"><Link to={`/admin/products/${p.id}`} className="hover:text-primary hover:underline">{p.title}</Link></TableCell>
                     <TableCell className="text-neutral-2">{p.store_name ?? "—"}</TableCell>
                     <TableCell className="text-neutral-2">{p.category_name ?? "—"}</TableCell>
                     <TableCell className="text-right">${Number(p.price).toFixed(2)}</TableCell>
