@@ -17,6 +17,9 @@ import Products from "./pages/admin/Products";
 import Categories from "./pages/admin/Categories";
 import Orders from "./pages/admin/Orders";
 import Audit from "./pages/admin/Audit";
+import Finance from "./pages/admin/Finance";
+import Reviews from "./pages/admin/Reviews";
+import Support from "./pages/admin/Support";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +41,9 @@ const App = () => (
               <Route path="products" element={<Products />} />
               <Route path="categories" element={<Categories />} />
               <Route path="orders" element={<Orders />} />
+              <Route path="finance" element={<Finance />} />
+              <Route path="reviews" element={<Reviews />} />
+              <Route path="support" element={<Support />} />
               <Route path="audit" element={<Audit />} />
             </Route>
             <Route path="*" element={<NotFound />} />
