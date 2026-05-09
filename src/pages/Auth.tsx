@@ -35,19 +35,6 @@ export default function Auth() {
       navigate("/admin");
     }
   };
-
-  const signUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setBusy(true);
-    const { error } = await supabase.auth.signUp({
-      email, password,
-      options: { emailRedirectTo: `${window.location.origin}/admin`, data: { full_name: fullName } },
-    });
-    setBusy(false);
-    if (error) return toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
-    toast({ title: "Account created", description: "Ask a super admin to grant you admin access." });
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-primary-bg p-6">
       <div className="w-full max-w-md">
