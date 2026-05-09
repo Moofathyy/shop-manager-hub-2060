@@ -23,17 +23,7 @@ export default function Auth() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
     if (error) return toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
-    // Verify admin
-    const { data: { user: u } } = await supabase.auth.getUser();
-    if (u) {
-      const { data } = await supabase.from("user_roles").select("role").eq("user_id", u.id);
-      const isAdminRole = (data ?? []).some((r) => ["super_admin","finance_admin","support_agent","moderator","marketing_admin"].includes(r.role));
-      if (!isAdminRole) {
-        await supabase.auth.signOut();
-        return toast({ title: "Access denied", description: "Your account does not have admin access.", variant: "destructive" });
-      }
-      navigate("/admin");
-    }
+    navigate("/admin");
   };
   return (
     <div className="min-h-screen flex items-center justify-center bg-primary-bg p-6">
