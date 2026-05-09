@@ -32,22 +32,6 @@ export default function AdminLayout() {
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-14 flex items-center gap-3 border-b border-neutral-6 bg-background px-4 sticky top-0 z-30">
             <SidebarTrigger className="text-neutral-2" />
-            <nav className="hidden md:flex items-center gap-1 text-caption text-neutral-4">
-              {segments.map((seg, i) => {
-                const path = "/" + segments.slice(0, i + 1).join("/");
-                const isLast = i === segments.length - 1;
-                return (
-                  <span key={path} className="flex items-center gap-1">
-                    {i > 0 && <ChevronRight className="h-3 w-3" />}
-                    {isLast ? (
-                      <span className="text-neutral-2 font-semibold">{labels[seg] ?? seg}</span>
-                    ) : (
-                      <Link to={path} className="hover:text-primary">{labels[seg] ?? seg}</Link>
-                    )}
-                  </span>
-                );
-              })}
-            </nav>
             <div className="flex-1" />
             <div className="hidden lg:flex relative w-72">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-4" />
@@ -77,6 +61,22 @@ export default function AdminLayout() {
               </DropdownMenuContent>
             </DropdownMenu>
           </header>
+          <nav className="hidden md:flex items-center gap-1 text-caption text-neutral-4 px-6 pt-4">
+            {segments.map((seg, i) => {
+              const path = "/" + segments.slice(0, i + 1).join("/");
+              const isLast = i === segments.length - 1;
+              return (
+                <span key={path} className="flex items-center gap-1">
+                  {i > 0 && <ChevronRight className="h-3 w-3" />}
+                  {isLast ? (
+                    <span className="text-neutral-2 font-semibold">{labels[seg] ?? seg}</span>
+                  ) : (
+                    <Link to={path} className="hover:text-primary">{labels[seg] ?? seg}</Link>
+                  )}
+                </span>
+              );
+            })}
+          </nav>
           <main className="flex-1 p-6 overflow-x-hidden">
             <Outlet />
           </main>
