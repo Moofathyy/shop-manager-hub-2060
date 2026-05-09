@@ -226,6 +226,8 @@ function RefundsTab() {
     load();
   };
 
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(rows, 25);
+
   return (
     <Card><CardContent className="p-4">
       <div className="overflow-x-auto rounded-input border border-neutral-6">
@@ -240,7 +242,7 @@ function RefundsTab() {
           <TableBody>
             {loading ? <TableRow><TableCell colSpan={5}><Skeleton className="h-6" /></TableCell></TableRow> :
               rows.length === 0 ? <TableRow><TableCell colSpan={5} className="text-center text-neutral-4 py-12">No refund requests</TableCell></TableRow> :
-                rows.map((r) => (
+                paged.map((r) => (
                   <TableRow key={r.id}>
                     <TableCell className="font-mono text-caption">{r.order_id.slice(0, 8)}</TableCell>
                     <TableCell className="text-right">${Number(r.amount).toFixed(2)}</TableCell>
@@ -262,6 +264,7 @@ function RefundsTab() {
           </TableBody>
         </Table>
       </div>
+      <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
     </CardContent></Card>
   );
 }
