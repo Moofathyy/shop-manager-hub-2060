@@ -32,7 +32,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Navigate to="/admin" replace />} />
-            <Route path="/auth" element={<Navigate to="/admin" replace />} />
+            <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
               <Route index element={<Overview />} />
               <Route path="shoppers" element={<Shoppers />} />
