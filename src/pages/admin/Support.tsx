@@ -68,7 +68,7 @@ export default function Support() {
     if (q && !r.subject.toLowerCase().includes(q.toLowerCase())) return false;
     return true;
   });
-  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 25, `${q}|${status}|${priority}`);
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 10, `${q}|${status}|${priority}`);
 
   return (
     <div className="space-y-6">

@@ -46,7 +46,7 @@ export default function Categories() {
     load();
   };
 
-  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(rows, 25);
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(rows, 10);
 
   return (
     <div className="space-y-6">

@@ -54,7 +54,7 @@ export default function Orders() {
     if (q && !(r.id.includes(q) || (r.shopper_name ?? "").toLowerCase().includes(q.toLowerCase()) || (r.store_name ?? "").toLowerCase().includes(q.toLowerCase()))) return false;
     return true;
   });
-  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 25, `${q}|${status}`);
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 10, `${q}|${status}`);
 
   const setStatusOf = async (id: string, newStatus: string) => {
     const { error } = await supabase.from("orders").update({ status: newStatus as "pending" | "confirmed" | "shipped" | "delivered" | "cancelled" | "returned" | "disputed" }).eq("id", id);

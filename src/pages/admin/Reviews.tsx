@@ -93,7 +93,7 @@ function ReviewsTab() {
     if (q && !(r.content ?? "").toLowerCase().includes(q.toLowerCase()) && !(r.reviewer_name ?? "").toLowerCase().includes(q.toLowerCase())) return false;
     return true;
   });
-  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 25, `${q}|${status}|${rating}`);
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 10, `${q}|${status}|${rating}`);
 
   return (
     <Card><CardContent className="p-4">

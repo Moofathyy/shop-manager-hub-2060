@@ -68,7 +68,7 @@ export default function Sellers() {
     if (q && !r.store_name.toLowerCase().includes(q.toLowerCase())) return false;
     return true;
   });
-  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 25, `${q}|${tab}`);
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 10, `${q}|${tab}`);
 
   const decide = async (id: string, decision: "approved" | "rejected") => {
     const { error } = await supabase.from("seller_profiles").update({ approval_status: decision }).eq("user_id", id);

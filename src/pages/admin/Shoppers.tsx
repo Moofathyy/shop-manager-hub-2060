@@ -81,7 +81,7 @@ export default function Shoppers() {
     if (q && !((r.full_name ?? "").toLowerCase().includes(q.toLowerCase()) || (r.phone ?? "").includes(q))) return false;
     return true;
   });
-  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 25, `${q}|${status}`);
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 10, `${q}|${status}`);
 
   const updateStatus = async (id: string, newStatus: Status, action: string) => {
     const { error } = await supabase.from("profiles").update({ status: newStatus }).eq("id", id);
