@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Store, ShoppingBag, DollarSign, ShieldCheck, Package } from "lucide-react";
+import { Users, Store, ShoppingBag, DollarSign, ShieldCheck, Package, TrendingUp, Sparkles } from "lucide-react";
 import {
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, LineChart, Line,
 } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface Kpi { label: string; value: string; icon: React.ElementType; tone?: string; }
+interface Kpi { label: string; value: string; icon: React.ElementType; gradient: string; iconBg: string; }
 
 export default function Overview() {
   const [loading, setLoading] = useState(true);
