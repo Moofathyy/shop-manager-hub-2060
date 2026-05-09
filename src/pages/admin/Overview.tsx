@@ -39,12 +39,12 @@ export default function Overview() {
       const activeSellers = sellers.filter((s) => s.approval_status === "approved").length;
 
       setKpis([
-        { label: "GMV (Today)", value: `$${gmvToday.toFixed(0)}`, icon: DollarSign },
-        { label: "GMV (7 days)", value: `$${gmvWeek.toFixed(0)}`, icon: DollarSign },
-        { label: "Active Shoppers", value: String(activeShoppers), icon: Users },
-        { label: "Active Sellers", value: String(activeSellers), icon: Store },
-        { label: "Pending Products", value: String(productsPending.count ?? 0), icon: Package },
-        { label: "Pending Merchants", value: String(merchantsPending.count ?? 0), icon: ShieldCheck },
+        { label: "GMV (Today)", value: `$${gmvToday.toFixed(0)}`, icon: DollarSign, gradient: "from-violet-500/15 via-fuchsia-500/10 to-transparent", iconBg: "bg-gradient-to-br from-violet-500 to-fuchsia-500" },
+        { label: "GMV (7 days)", value: `$${gmvWeek.toFixed(0)}`, icon: TrendingUp, gradient: "from-emerald-500/15 via-teal-500/10 to-transparent", iconBg: "bg-gradient-to-br from-emerald-500 to-teal-500" },
+        { label: "Active Shoppers", value: String(activeShoppers), icon: Users, gradient: "from-sky-500/15 via-blue-500/10 to-transparent", iconBg: "bg-gradient-to-br from-sky-500 to-blue-600" },
+        { label: "Active Sellers", value: String(activeSellers), icon: Store, gradient: "from-amber-500/15 via-orange-500/10 to-transparent", iconBg: "bg-gradient-to-br from-amber-500 to-orange-500" },
+        { label: "Pending Products", value: String(productsPending.count ?? 0), icon: Package, gradient: "from-pink-500/15 via-rose-500/10 to-transparent", iconBg: "bg-gradient-to-br from-pink-500 to-rose-500" },
+        { label: "Pending Merchants", value: String(merchantsPending.count ?? 0), icon: ShieldCheck, gradient: "from-indigo-500/15 via-purple-500/10 to-transparent", iconBg: "bg-gradient-to-br from-indigo-500 to-purple-600" },
       ]);
 
       // Revenue / orders over last 14 days
