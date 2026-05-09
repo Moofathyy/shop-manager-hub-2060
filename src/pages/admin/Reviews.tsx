@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { logAudit } from "@/lib/audit";
 import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TablePagination } from "@/components/TablePagination";
+import { usePagination } from "@/hooks/usePagination";
 
 interface Review {
   id: string; reviewer_id: string; target_type: string; target_id: string;
@@ -91,6 +93,7 @@ function ReviewsTab() {
     if (q && !(r.content ?? "").toLowerCase().includes(q.toLowerCase()) && !(r.reviewer_name ?? "").toLowerCase().includes(q.toLowerCase())) return false;
     return true;
   });
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 25, `${q}|${status}|${rating}`);
 
   return (
     <Card><CardContent className="p-4">
@@ -128,7 +131,7 @@ function ReviewsTab() {
           <TableBody>
             {loading ? <TableRow><TableCell colSpan={6}><Skeleton className="h-6" /></TableCell></TableRow> :
               filtered.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center text-neutral-4 py-12">No reviews</TableCell></TableRow> :
-                filtered.map((r) => (
+                paged.map((r) => (
                   <TableRow key={r.id}>
                     <TableCell className="font-medium">{r.reviewer_name}</TableCell>
                     <TableCell>{stars(r.rating)}</TableCell>
@@ -153,6 +156,7 @@ function ReviewsTab() {
           </TableBody>
         </Table>
       </div>
+      <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
     </CardContent></Card>
   );
 }
