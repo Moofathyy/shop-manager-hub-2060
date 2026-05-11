@@ -45,7 +45,7 @@ export default function MerchantDetail() {
     setLoading(true);
     const { data: a } = await supabase.from("merchant_applications").select("*").eq("id", id).single();
     if (!a) { setLoading(false); return; }
-    const application = { ...a, documents: (a.documents as Doc[]) ?? [], kyc_result: a.kyc_result as KycResult | null } as Application;
+    const application = { ...a, documents: (a.documents as unknown as Doc[]) ?? [], kyc_result: a.kyc_result as unknown as KycResult | null } as Application;
     setApp(application);
     const [{ data: s }, { data: p }, { data: h }] = await Promise.all([
       supabase.from("seller_profiles").select("store_name, business_name, address, tax_id").eq("user_id", application.seller_id).maybeSingle(),
