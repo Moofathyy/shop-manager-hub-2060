@@ -131,32 +131,38 @@ export type Database = {
       }
       merchant_applications: {
         Row: {
+          business_type: string | null
           created_at: string
           decided_at: string | null
           decided_by: string | null
           decision_reason: string | null
           documents: Json
           id: string
+          kyc_result: Json | null
           seller_id: string
           status: Database["public"]["Enums"]["approval_status"]
         }
         Insert: {
+          business_type?: string | null
           created_at?: string
           decided_at?: string | null
           decided_by?: string | null
           decision_reason?: string | null
           documents?: Json
           id?: string
+          kyc_result?: Json | null
           seller_id: string
           status?: Database["public"]["Enums"]["approval_status"]
         }
         Update: {
+          business_type?: string | null
           created_at?: string
           decided_at?: string | null
           decided_by?: string | null
           decision_reason?: string | null
           documents?: Json
           id?: string
+          kyc_result?: Json | null
           seller_id?: string
           status?: Database["public"]["Enums"]["approval_status"]
         }
