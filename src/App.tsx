@@ -13,6 +13,7 @@ import Overview from "./pages/admin/Overview";
 import Shoppers from "./pages/admin/Shoppers";
 import Sellers from "./pages/admin/Sellers";
 import Merchants from "./pages/admin/Merchants";
+import MerchantDetail from "./pages/admin/MerchantDetail";
 import Products from "./pages/admin/Products";
 import Categories from "./pages/admin/Categories";
 import Orders from "./pages/admin/Orders";
@@ -44,6 +45,7 @@ const App = () => (
               <Route path="sellers" element={<Sellers />} />
               <Route path="sellers/:id" element={<SellerDetail />} />
               <Route path="merchants" element={<Merchants />} />
+              <Route path="merchants/:id" element={<MerchantDetail />} />
               <Route path="products" element={<Products />} />
               <Route path="products/:id" element={<ProductDetail />} />
               <Route path="categories" element={<Categories />} />
