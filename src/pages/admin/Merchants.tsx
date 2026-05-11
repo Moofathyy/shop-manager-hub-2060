@@ -1,16 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle2, XCircle, MessageSquareWarning, FileText } from "lucide-react";
+import { Check, X, Eye } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
-import { logAudit } from "@/lib/audit";
-import { toast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TablePagination } from "@/components/TablePagination";
 import { usePagination } from "@/hooks/usePagination";
@@ -18,49 +16,64 @@ import { usePagination } from "@/hooks/usePagination";
 interface Application {
   id: string;
   seller_id: string;
-  documents: Array<{ name: string; url?: string }>;
+  documents: Array<{ name: string; url?: string; type?: string }>;
   status: "pending" | "approved" | "rejected" | "needs_info";
   decision_reason: string | null;
   created_at: string;
+  business_type: string | null;
   store_name?: string;
+  applicant_name?: string;
+  country?: string;
 }
 
 export default function Merchants() {
   const [rows, setRows] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("pending");
+  const [search, setSearch] = useState("");
+  const [country, setCountry] = useState("all");
+  const [bizType, setBizType] = useState("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
-  const load = async () => {
-    setLoading(true);
-    const [{ data: apps }, { data: sellers }] = await Promise.all([
-      supabase.from("merchant_applications").select("*").order("created_at", { ascending: false }),
-      supabase.from("seller_profiles").select("user_id, store_name"),
-    ]);
-    const m = new Map((sellers ?? []).map((s) => [s.user_id, s.store_name]));
-    setRows((apps ?? []).map((a) => ({ ...a, documents: (a.documents as Application["documents"]) ?? [], store_name: m.get(a.seller_id) })));
-    setLoading(false);
-  };
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const [{ data: apps }, { data: sellers }, { data: profs }] = await Promise.all([
+        supabase.from("merchant_applications").select("*").order("created_at", { ascending: false }),
+        supabase.from("seller_profiles").select("user_id, store_name"),
+        supabase.from("profiles").select("id, full_name, country"),
+      ]);
+      const m = new Map((sellers ?? []).map((s) => [s.user_id, s.store_name]));
+      const pm = new Map((profs ?? []).map((p) => [p.id, p]));
+      setRows((apps ?? []).map((a) => ({
+        ...a,
+        documents: (a.documents as Application["documents"]) ?? [],
+        store_name: m.get(a.seller_id) ?? undefined,
+        applicant_name: pm.get(a.seller_id)?.full_name ?? "—",
+        country: pm.get(a.seller_id)?.country ?? "—",
+      } as Application)));
+      setLoading(false);
+    })();
+  }, []);
 
-  useEffect(() => { load(); }, []);
+  const countries = useMemo(() => Array.from(new Set(rows.map((r) => r.country).filter((c): c is string => !!c && c !== "—"))).sort(), [rows]);
+  const bizTypes = useMemo(() => Array.from(new Set(rows.map((r) => r.business_type).filter((c): c is string => !!c))).sort(), [rows]);
 
-  const filtered = rows.filter((r) => tab === "all" || r.status === tab);
-  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 10, tab);
-
-  const decide = async (app: Application, status: Application["status"], reason?: string) => {
-    const { error } = await supabase.from("merchant_applications").update({
-      status, decision_reason: reason ?? null,
-      decided_at: new Date().toISOString(),
-      decided_by: (await supabase.auth.getUser()).data.user?.id ?? null,
-    }).eq("id", app.id);
-    if (error) return toast({ title: "Failed", description: error.message, variant: "destructive" });
-
-    if (status === "approved" || status === "rejected") {
-      await supabase.from("seller_profiles").update({ approval_status: status }).eq("user_id", app.seller_id);
+  const filtered = rows.filter((r) => {
+    if (tab !== "all" && r.status !== tab) return false;
+    if (country !== "all" && r.country !== country) return false;
+    if (bizType !== "all" && r.business_type !== bizType) return false;
+    if (dateFrom && new Date(r.created_at) < new Date(dateFrom)) return false;
+    if (dateTo && new Date(r.created_at) > new Date(dateTo + "T23:59:59")) return false;
+    if (search) {
+      const s = search.toLowerCase();
+      if (!(r.store_name?.toLowerCase().includes(s) || r.applicant_name?.toLowerCase().includes(s))) return false;
     }
-    await logAudit(`merchant.${status}`, "merchant_application", app.id, { reason });
-    toast({ title: `Application ${status.replace("_", " ")}` });
-    load();
-  };
+    return true;
+  });
+  const filterKey = `${tab}-${country}-${bizType}-${dateFrom}-${dateTo}-${search}`;
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 10, filterKey);
 
   return (
     <div className="space-y-6">
@@ -74,82 +87,95 @@ export default function Merchants() {
           <TabsTrigger value="pending">Pending</TabsTrigger>
           <TabsTrigger value="approved">Approved</TabsTrigger>
           <TabsTrigger value="rejected">Rejected</TabsTrigger>
+          <TabsTrigger value="needs_info">Needs info</TabsTrigger>
           <TabsTrigger value="all">All</TabsTrigger>
         </TabsList>
       </Tabs>
 
+      <Card>
+        <CardContent className="p-4 grid gap-3 md:grid-cols-5">
+          <Input placeholder="Search applicant or store…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Select value={country} onValueChange={setCountry}>
+            <SelectTrigger><SelectValue placeholder="Country" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All countries</SelectItem>
+              {countries.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={bizType} onValueChange={setBizType}>
+            <SelectTrigger><SelectValue placeholder="Business type" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All business types</SelectItem>
+              {bizTypes.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} aria-label="From date" />
+          <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} aria-label="To date" />
+        </CardContent>
+      </Card>
+
       {loading ? <Skeleton className="h-40" /> : filtered.length === 0 ? (
         <Card><CardContent className="p-12 text-center text-neutral-4">No applications</CardContent></Card>
       ) : (
-        <div className="grid gap-4">
-          {paged.map((a) => (
-            <Card key={a.id}>
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between flex-wrap gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-h3 text-neutral-1">{a.store_name ?? "Unnamed store"}</h3>
-                      <Badge variant={a.status === "approved" ? "success" : a.status === "rejected" ? "destructive" : "warning"}>
-                        {a.status.replace("_", " ")}
-                      </Badge>
-                    </div>
-                    <p className="text-caption text-neutral-2">Submitted {new Date(a.created_at).toLocaleDateString()}</p>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {a.documents.length === 0 ? (
-                        <span className="text-caption text-neutral-4">No documents uploaded</span>
-                      ) : a.documents.map((d, i) => (
-                        <Badge key={i} variant="secondary"><FileText className="h-3 w-3 mr-1" /> {d.name}</Badge>
-                      ))}
-                    </div>
-                    {a.decision_reason && (
-                      <p className="text-caption text-neutral-2 mt-2"><strong>Reason:</strong> {a.decision_reason}</p>
-                    )}
-                  </div>
-                  {a.status === "pending" && (
-                    <div className="flex gap-2">
-                      <Button variant="primary" size="sm" onClick={() => decide(a, "approved")}>
-                        <CheckCircle2 className="h-4 w-4" /> Approve
-                      </Button>
-                      <ReasonDialog
-                        trigger={<Button variant="secondary" size="sm"><MessageSquareWarning className="h-4 w-4" /> Request info</Button>}
-                        title="Request more information"
-                        onSubmit={(r) => decide(a, "needs_info", r)}
-                      />
-                      <ReasonDialog
-                        trigger={<Button variant="destructive" size="sm"><XCircle className="h-4 w-4" /> Reject</Button>}
-                        title="Reject application"
-                        onSubmit={(r) => decide(a, "rejected", r)}
-                      />
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-          <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} pageSizeOptions={[5, 10, 25, 50]} />
-        </div>
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Applicant</TableHead>
+                  <TableHead>Business</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Country</TableHead>
+                  <TableHead>Submitted</TableHead>
+                  <TableHead>Documents</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paged.map((a) => {
+                  const has = (t: string) => a.documents.some((d) => d.type === t || d.name?.toLowerCase().includes(t));
+                  return (
+                    <TableRow key={a.id}>
+                      <TableCell className="font-medium">{a.applicant_name}</TableCell>
+                      <TableCell>{a.store_name ?? "—"}</TableCell>
+                      <TableCell>{a.business_type ?? "—"}</TableCell>
+                      <TableCell>{a.country}</TableCell>
+                      <TableCell>{new Date(a.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2 text-caption">
+                          <DocCheck label="Reg" ok={has("registration")} />
+                          <DocCheck label="ID" ok={has("id")} />
+                          <DocCheck label="Bank" ok={has("bank")} />
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={a.status === "approved" ? "success" : a.status === "rejected" ? "destructive" : "warning"}>
+                          {a.status.replace("_", " ")}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button asChild size="sm" variant="ghost"><Link to={`/admin/merchants/${a.id}`}><Eye className="h-4 w-4" /> Review</Link></Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+            <div className="p-3 border-t">
+              <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} pageSizeOptions={[5, 10, 25, 50]} />
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
 }
 
-function ReasonDialog({ trigger, title, onSubmit }: { trigger: React.ReactNode; title: string; onSubmit: (reason: string) => void }) {
-  const [reason, setReason] = useState("");
-  const [open, setOpen] = useState(false);
+function DocCheck({ label, ok }: { label: string; ok: boolean }) {
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>This message will be sent to the seller.</DialogDescription>
-        </DialogHeader>
-        <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason…" rows={4} />
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={() => { onSubmit(reason); setOpen(false); setReason(""); }} disabled={!reason.trim()}>Submit</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <span className={`inline-flex items-center gap-1 ${ok ? "text-success" : "text-neutral-4"}`}>
+      {ok ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />} {label}
+    </span>
   );
 }
