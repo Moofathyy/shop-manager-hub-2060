@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Download, Ban, ShieldOff, ShieldCheck } from "lucide-react";
+import { Search, Download, Ban, ShieldOff, ShieldCheck, MoreHorizontal, Eye } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -14,8 +14,11 @@ import {
 } from "@/components/ui/select";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
-  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { downloadCSV } from "@/lib/csv";
 import { logAudit } from "@/lib/audit";
 import { toast } from "@/hooks/use-toast";
@@ -153,27 +156,12 @@ export default function Shoppers() {
                     <TableCell className="text-neutral-2">{new Date(s.created_at).toLocaleDateString()}</TableCell>
                     <TableCell>{statusBadge(s.status)}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {s.status !== "active" && (
-                          <Button variant="ghost" size="sm" onClick={() => updateStatus(s.id, "active", "shopper.reactivate")}>
-                            <ShieldCheck className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {s.status === "active" && (
-                          <ConfirmAction
-                            label={<ShieldOff className="h-4 w-4" />} title="Suspend shopper?"
-                            description="They will not be able to place orders until reactivated."
-                            onConfirm={() => updateStatus(s.id, "suspended", "shopper.suspend")}
-                          />
-                        )}
-                        {s.status !== "banned" && (
-                          <ConfirmAction
-                            label={<Ban className="h-4 w-4 text-destructive-foreground" />} title="Ban shopper?"
-                            description="This permanently blocks the account."
-                            destructive onConfirm={() => updateStatus(s.id, "banned", "shopper.ban")}
-                          />
-                        )}
-                      </div>
+                      <ShopperActions
+                        shopper={s}
+                        onReactivate={() => updateStatus(s.id, "active", "shopper.reactivate")}
+                        onSuspend={() => updateStatus(s.id, "suspended", "shopper.suspend")}
+                        onBan={() => updateStatus(s.id, "banned", "shopper.ban")}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -187,24 +175,69 @@ export default function Shoppers() {
   );
 }
 
-function ConfirmAction({ label, title, description, onConfirm, destructive }: { label: React.ReactNode; title: string; description: string; onConfirm: () => void; destructive?: boolean }) {
+function ShopperActions({
+  shopper, onReactivate, onSuspend, onBan,
+}: {
+  shopper: Shopper;
+  onReactivate: () => void;
+  onSuspend: () => void;
+  onBan: () => void;
+}) {
+  const [confirm, setConfirm] = useState<null | "suspend" | "ban">(null);
+  const dialogs: Record<"suspend" | "ban", { title: string; description: string; destructive?: boolean; onConfirm: () => void }> = {
+    suspend: { title: "Suspend shopper?", description: "They will not be able to place orders until reactivated.", onConfirm: onSuspend },
+    ban: { title: "Ban shopper?", description: "This permanently blocks the account.", destructive: true, onConfirm: onBan },
+  };
+  const active = confirm ? dialogs[confirm] : null;
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="sm">{label}</Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} className={destructive ? "bg-destructive text-destructive-foreground" : ""}>
-            Confirm
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem asChild>
+            <Link to={`/admin/shoppers/${shopper.id}`}>
+              <Eye className="h-4 w-4" /> View details
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          {shopper.status !== "active" && (
+            <DropdownMenuItem onClick={onReactivate}>
+              <ShieldCheck className="h-4 w-4 text-success" /> Reactivate
+            </DropdownMenuItem>
+          )}
+          {shopper.status === "active" && (
+            <DropdownMenuItem onClick={() => setConfirm("suspend")}>
+              <ShieldOff className="h-4 w-4" /> Suspend
+            </DropdownMenuItem>
+          )}
+          {shopper.status !== "banned" && (
+            <DropdownMenuItem onClick={() => setConfirm("ban")} className="text-destructive focus:text-destructive">
+              <Ban className="h-4 w-4" /> Ban
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <AlertDialog open={!!confirm} onOpenChange={(o) => !o && setConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{active?.title}</AlertDialogTitle>
+            <AlertDialogDescription>{active?.description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => { active?.onConfirm(); setConfirm(null); }}
+              className={active?.destructive ? "bg-destructive text-destructive-foreground" : ""}
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

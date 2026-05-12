@@ -5,9 +5,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, CheckCircle2, XCircle, EyeOff, Eye, LayoutGrid, List, Package as PackageIcon } from "lucide-react";
+import { Search, CheckCircle2, XCircle, EyeOff, Eye, LayoutGrid, List, Package as PackageIcon, MoreHorizontal } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -247,28 +250,41 @@ export default function Products() {
                     <TableCell className="text-right">{p.stock}</TableCell>
                     <TableCell>{statusBadge(p.status)}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        {p.status === "pending" && (
-                          <>
-                            <Button variant="ghost" size="sm" onClick={() => setStatus([p.id], "approved", "approve")}>
-                              <CheckCircle2 className="h-4 w-4 text-success" />
-                            </Button>
-                            <Button variant="ghost" size="sm" onClick={() => setStatus([p.id], "rejected", "reject")}>
-                              <XCircle className="h-4 w-4 text-destructive-foreground" />
-                            </Button>
-                          </>
-                        )}
-                        {p.status === "approved" && (
-                          <Button variant="ghost" size="sm" onClick={() => setStatus([p.id], "unpublished", "unpublish")}>
-                            <EyeOff className="h-4 w-4" />
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
                           </Button>
-                        )}
-                        {p.status === "unpublished" && (
-                          <Button variant="ghost" size="sm" onClick={() => setStatus([p.id], "approved", "republish")}>
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link to={`/admin/products/${p.id}`}>
+                              <Eye className="h-4 w-4" /> View details
+                            </Link>
+                          </DropdownMenuItem>
+                          {p.status === "pending" && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => setStatus([p.id], "approved", "approve")}>
+                                <CheckCircle2 className="h-4 w-4 text-success" /> Approve
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setStatus([p.id], "rejected", "reject")} className="text-destructive focus:text-destructive">
+                                <XCircle className="h-4 w-4" /> Reject
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                          {p.status === "approved" && (
+                            <DropdownMenuItem onClick={() => setStatus([p.id], "unpublished", "unpublish")}>
+                              <EyeOff className="h-4 w-4" /> Unpublish
+                            </DropdownMenuItem>
+                          )}
+                          {p.status === "unpublished" && (
+                            <DropdownMenuItem onClick={() => setStatus([p.id], "approved", "republish")}>
+                              <Eye className="h-4 w-4" /> Republish
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
