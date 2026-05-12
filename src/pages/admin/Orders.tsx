@@ -126,23 +126,38 @@ export default function Orders() {
                     <TableCell>{orderBadge(o.status)}</TableCell>
                     <TableCell className="text-neutral-2">{new Date(o.created_at).toLocaleDateString()}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        {["pending", "confirmed"].includes(o.status) && (
-                          <Button variant="ghost" size="sm" onClick={() => setStatusOf(o.id, "shipped")}>
-                            <Truck className="h-4 w-4 text-info" />
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
                           </Button>
-                        )}
-                        {o.status === "shipped" && (
-                          <Button variant="ghost" size="sm" onClick={() => setStatusOf(o.id, "delivered")}>
-                            <CheckCircle2 className="h-4 w-4 text-success" />
-                          </Button>
-                        )}
-                        {!["cancelled", "delivered", "returned"].includes(o.status) && (
-                          <Button variant="ghost" size="sm" onClick={() => setStatusOf(o.id, "cancelled")}>
-                            <XCircle className="h-4 w-4 text-destructive-foreground" />
-                          </Button>
-                        )}
-                      </div>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link to={`/admin/orders/${o.id}`}>
+                              <Eye className="h-4 w-4" /> View details
+                            </Link>
+                          </DropdownMenuItem>
+                          {(["pending", "confirmed"].includes(o.status) || o.status === "shipped" || !["cancelled", "delivered", "returned"].includes(o.status)) && (
+                            <DropdownMenuSeparator />
+                          )}
+                          {["pending", "confirmed"].includes(o.status) && (
+                            <DropdownMenuItem onClick={() => setStatusOf(o.id, "shipped")}>
+                              <Truck className="h-4 w-4 text-info" /> Mark as shipped
+                            </DropdownMenuItem>
+                          )}
+                          {o.status === "shipped" && (
+                            <DropdownMenuItem onClick={() => setStatusOf(o.id, "delivered")}>
+                              <CheckCircle2 className="h-4 w-4 text-success" /> Mark as delivered
+                            </DropdownMenuItem>
+                          )}
+                          {!["cancelled", "delivered", "returned"].includes(o.status) && (
+                            <DropdownMenuItem onClick={() => setStatusOf(o.id, "cancelled")} className="text-destructive focus:text-destructive">
+                              <XCircle className="h-4 w-4" /> Cancel order
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
