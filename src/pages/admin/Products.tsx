@@ -46,6 +46,7 @@ export default function Products() {
   const [category, setCategory] = useState("all");
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [view, setView] = useState<"table" | "cards">("cards");
 
   const load = async () => {
     setLoading(true);
