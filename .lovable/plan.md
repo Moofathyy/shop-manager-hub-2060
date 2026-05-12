@@ -1,79 +1,80 @@
-# Marketing & Promotions Module
+# Analytics & Reports Module
 
-A full Phase 3 marketing suite for the admin dashboard, covering coupons, flash sales & banners, notifications, homepage slots, referrals, and loyalty.
+Centralized platform performance insights with KPIs, charts, cohort analysis, geo breakdown, and a custom report builder.
 
-## Scope
+## Pages & Structure
 
-Six sub-modules under a new `/admin/marketing` route, each as its own tab/page:
+New section under `src/pages/admin/analytics/` with a tabbed container:
 
-1. **Coupons & Discount Codes**
-2. **Flash Sales & Banners**
-3. **Push & Email Notifications**
-4. **Homepage & Featured Slots**
-5. **Referral Program**
-6. **Loyalty & Rewards**
+- `Analytics.tsx` — tabs container (Dashboard / Custom Reports)
+- `Dashboard.tsx` — KPI cards + all charts on one scrollable page
+- `CustomReports.tsx` — date-range + metric/dimension builder with table preview and CSV export
 
-All actions write to `audit_log` via the existing helper. All lists use the existing `TablePagination` + `usePagination` patterns. Design uses existing semantic tokens.
+Route: `/admin/analytics`. Sidebar entry under **Operations** with `BarChart3` icon.
 
----
+## Dashboard contents
 
-## Database (one migration)
+**KPI cards (top row, 5 across):**
+- GMV (sum of `orders.total`)
+- Net revenue (GMV − refunds)
+- AOV (GMV ÷ order count)
+- Shoppers (total / new this month / returning)
+- Sellers (total / new / active in last 30d)
+- Conversion rate, cart abandonment — shown as static demo values (no visits/sessions table exists yet)
 
-New enums:
-- `discount_type` — `percentage | fixed`
-- `coupon_status` — `active | paused | expired`
-- `notification_channel` — `push | email`
-- `notification_status` — `draft | scheduled | sent`
-- `featured_slot_type` — `product | seller | category`
+Each card shows current value and % delta vs previous period.
 
-New tables (all with RLS — admins manage, public/shoppers read where relevant):
+**Charts:**
+- Revenue over time — line (recharts), toggle Daily / Weekly / Monthly via tabs
+- Orders over time — bar chart with same granularity toggle
+- Top 10 products by revenue — horizontal bar list
+- Top 10 sellers by revenue — horizontal bar list
+- Top categories by sales — donut/pie
+- Geographic sales — country breakdown (table + bars from `profiles.country` joined to orders via `shopper_id`); no real map library — country bar list keeps bundle small
+- Cohort retention — matrix table: rows = registration month, cols = months since signup, cells = % retained (computed from `profiles.created_at` + their order activity months)
+- Funnel — vertical 5-stage funnel (visits → product views → add to cart → checkout → purchase); since we have no event tracking, derive checkout/purchase from `orders` and use illustrative ratios for the upper stages
 
-- `coupons` — code, discount_type, discount_value, min_order_value, max_uses, used_count, expires_at, status, applicable_sellers (uuid[]), applicable_categories (uuid[])
-- `coupon_redemptions` — coupon_id, order_id, shopper_id, discount_applied, redeemed_at (for usage stats)
-- `flash_sales` — title, description, starts_at, ends_at, discount_percentage, product_ids (uuid[]), status
-- `banners` — title, image_desktop_url, image_mobile_url, link_url, sort_order, starts_at, ends_at, active
-- `notifications` — channel, audience (`all_shoppers | all_sellers | segment`), segment_filter (jsonb), subject, body, template_key, scheduled_for, sent_at, status, open_count, click_count, recipient_count
-- `notification_templates` — key, name, subject, body
-- `featured_slots` — slot_type, entity_id, position, starts_at, ends_at
-- `referral_config` — single-row: referrer_reward, referee_reward, expiry_days, max_per_user
-- `referrals` — referrer_id, referee_id, status (`pending | completed | expired`), reward_paid, completed_at
-- `loyalty_config` — single-row: points_per_dollar, redemption_rate, expiry_months
-- `loyalty_points` — user_id, balance, lifetime_earned
-- `loyalty_adjustments` — user_id, admin_id, delta, reason, created_at
+## Custom report builder
 
-New storage bucket: `marketing-banners` (public).
+Form:
+- Date range picker (shadcn calendar, two popovers)
+- Metrics multi-select: GMV, orders, AOV, refund amount, refund count, new shoppers, new sellers
+- Dimension (group by): seller / category / country / product / day
+- "Run report" button → renders results in a `Table`
+- "Export CSV" downloads as `report-YYYY-MM-DD.csv`
+- "Schedule" dialog: frequency (daily/weekly/monthly) + recipient email → inserts into a new `scheduled_reports` table (no actual email send — just stored; surfaced under "Scheduled reports" list with delete)
 
-## Frontend pages
+Excel/PDF export are **out of scope** for v1 (CSV only). Real email delivery of scheduled reports is also out of scope — records are stored.
 
-```
-src/pages/admin/marketing/
-  Marketing.tsx          // tabs container
-  Coupons.tsx            // list + create dialog + detail drawer with stats
-  FlashSales.tsx         // list + create/edit dialog
-  Banners.tsx            // grid with upload + schedule
-  Notifications.tsx      // composer + scheduled/sent list + templates
-  FeaturedSlots.tsx      // dnd-kit reorder per slot type
-  Referral.tsx           // config form + stats table
-  Loyalty.tsx            // config form + top users + manual adjust dialog
-```
+## Database
 
-Add a single `/admin/marketing` route in `App.tsx` with nested tabs (so the sidebar gets one entry). Add a "Marketing" group in `AppSidebar.tsx` gated by `marketing_admin` or `super_admin`.
+One migration:
+- `scheduled_reports` table: `name`, `config jsonb` (metrics, dimension, date range pattern), `frequency` (`daily|weekly|monthly`), `recipient_email`, `last_run_at`, `next_run_at`, `created_by`, `active`
+- RLS: admins manage all (`is_admin(auth.uid())`)
 
-## Seed data
-
-Seed via insert tool after migration approval: 6 coupons (mix of active/expired/paused with redemptions), 2 flash sales, 4 banners, 5 notifications (sent + scheduled), 3 featured slots per type, referral + loyalty config rows, 12 loyalty balances, sample referrals.
-
-## Out of scope (call out to user)
-
-- Real push delivery (FCM/APNs) and real email send — records are written and "sent" is simulated; wiring to a provider is a follow-up.
-- Real-time storefront rendering of banners/featured slots — schema is ready; storefront isn't built yet.
-- Open/click tracking pixels — counts are stored but require a tracking endpoint to populate.
+No seeding needed; data is computed from existing `orders`, `order_items`, `products`, `profiles`, `seller_profiles`, `categories`, `refunds`.
 
 ## Files
 
-- new migration (schema + RLS + bucket + policies)
-- 8 new pages under `src/pages/admin/marketing/`
-- edits: `src/App.tsx`, `src/components/AppSidebar.tsx`
-- new dependency: `@dnd-kit/core` + `@dnd-kit/sortable` for Featured Slots reorder
+**New:**
+- `src/pages/admin/analytics/Analytics.tsx`
+- `src/pages/admin/analytics/Dashboard.tsx`
+- `src/pages/admin/analytics/CustomReports.tsx`
+- `src/lib/analytics.ts` — query helpers (KPIs, time series, top lists, cohort, funnel)
+- `src/lib/csvExport.ts` — small CSV stringifier
+- One migration for `scheduled_reports`
 
-Approve and I'll ship it.
+**Edited:**
+- `src/App.tsx` — route
+- `src/components/AppSidebar.tsx` — sidebar entry
+
+## Dependencies
+
+`recharts` is already in the project (used elsewhere). `date-fns` is already in use. No new dependencies.
+
+## Out of scope
+
+- Real session/page-view tracking (no events table) — conversion/abandonment/funnel upper stages use illustrative values clearly labeled "estimated"
+- Actual world map visualization — using a country bar list
+- Excel and PDF export — CSV only
+- Real email delivery of scheduled reports — only stored
