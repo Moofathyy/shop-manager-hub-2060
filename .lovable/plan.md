@@ -1,114 +1,79 @@
+# Marketing & Promotions Module
 
-# E-Commerce Admin Dashboard — Full Spec, Phased Build
+A full Phase 3 marketing suite for the admin dashboard, covering coupons, flash sales & banners, notifications, homepage slots, referrals, and loyalty.
 
-Your spec covers 14 modules, 5 admin roles, audit logging, fraud detection, logistics, etc. That is a large, multi-week build. To ship something usable fast and avoid a half-broken mega-PR, I'll build it in **4 phases**, each independently shippable. Phase 1 is what gets implemented when you click "Implement plan"; later phases roll out as follow-up prompts.
+## Scope
 
-Backend: Lovable Cloud (Postgres + auth + RLS + edge functions + storage).
-Design: Ejada tokens you provided (Readex Pro, primary #001081, radius/elevation rules, etc.).
+Six sub-modules under a new `/admin/marketing` route, each as its own tab/page:
 
----
+1. **Coupons & Discount Codes**
+2. **Flash Sales & Banners**
+3. **Push & Email Notifications**
+4. **Homepage & Featured Slots**
+5. **Referral Program**
+6. **Loyalty & Rewards**
 
-## Phase 1 — Foundation + Core Admin (this implementation)
-
-Everything an admin needs day-one: design system, auth, RBAC, shoppers, sellers, orders, products, basic overview, audit log.
-
-### 1.1 Design system
-- `index.css` + `tailwind.config.ts`: all Ejada colors as HSL CSS vars, Readex Pro, spacing scale (4/8/12/16/20/24/32/40/48), radii (card 16, input 12, full 9999), elevation-1 shadow.
-- shadcn variants overridden: Button (primary/secondary/ghost/destructive, h-13, radius-full, 16/600), Input (h-13, radius 12, focus border 2px primary), Card (radius 16, p-4, elevation-1), Chip, Badge (status colors using success/warning/destructive/info tokens).
-- Load Readex Pro from Google Fonts in `index.html`.
-
-### 1.2 Backend schema (Lovable Cloud)
-Tables, all with RLS:
-- `profiles` (auth.users FK, full_name, phone, avatar_url, country, status: active/suspended/banned, last_login)
-- `user_roles` — separate table; `app_role` enum: `super_admin | finance_admin | support_agent | moderator | marketing_admin | shopper | seller`
-- `seller_profiles` (user_id, store_name, business_name, tax_id, kyc_status, approval_status, commission_rate, payout_balance)
-- `merchant_applications` (seller_id, documents jsonb, status, decision_reason, decided_by, decided_at)
-- `categories` (id, parent_id, name, slug, sort_order)
-- `products` (seller_id, title, description, category_id, price, stock, status, sku, images jsonb)
-- `orders` (shopper_id, seller_id, status, subtotal, shipping, discount, total, payment_status, shipping_status)
-- `order_items` (order_id, product_id, qty, price)
-- `audit_log` (admin_id, action, entity_type, entity_id, metadata, ip, created_at)
-- `storage` bucket: `merchant-docs` (private), `product-images` (public)
-
-Security:
-- `has_role(uid, role)` SECURITY DEFINER
-- `is_admin(uid)` returns true for any of the 5 admin roles
-- Admin RLS policies use `is_admin(auth.uid())`
-- `on_auth_user_created` trigger creates profile
-
-### 1.3 Auth + RBAC
-- `/auth` login (email + password, Ejada-styled)
-- `<AdminRoute requiredRole="...">` wrapper guards every `/admin/*` route
-- Role-aware sidebar (hide modules user can't access)
-- Logout, current admin badge in top bar
-
-### 1.4 App shell
-- Collapsible left sidebar (shadcn Sidebar) with module groups
-- Top bar (h-14): global search input (wired to a stub, fully functional in Phase 2), notifications bell, admin avatar/menu
-- Breadcrumbs on inner pages
-- Toaster + confirmation modals + skeleton loaders (no spinners)
-
-### 1.5 Modules in Phase 1
-- **Overview** — KPI cards (GMV today/week/month, active shoppers, active sellers, pending merchants, pending products), Revenue line chart, Orders bar chart, Shoppers vs Sellers signups (recharts).
-- **Shoppers** — list (search, filter by status/date/country/order count, sort, CSV export, pagination 25/50/100). Profile page: account info, order history, addresses, suspend/ban/warn/reset password (all logged to audit_log).
-- **Sellers** — list with filters; profile page: business info, KYC, products breakdown, revenue, commission override, performance score, reviews, suspend/ban.
-- **Merchant approval queue** — pending applications, doc viewer, Approve / Reject (reason) / Request more info, audit trail.
-- **Products** — catalog list + filters; product approval queue (bulk approve/reject); product detail edit (override title/desc/category/SEO, unpublish).
-- **Categories** — CRUD with nested hierarchy + drag-and-drop reorder.
-- **Orders** — list with all filters; detail page (items, shopper/seller links, payment, shipping, timeline), cancel order, mark resolved, flag.
-- **Audit log** — read-only viewer with filters and CSV export.
-
-### 1.6 Cross-cutting
-- Server-side pagination on all large lists
-- Status badges semantically tokenized
-- Confirmation modal for every destructive action
-- Toast on every mutation
-- Empty states with CTAs
-- All admin mutations write to `audit_log` via a shared helper
+All actions write to `audit_log` via the existing helper. All lists use the existing `TablePagination` + `usePagination` patterns. Design uses existing semantic tokens.
 
 ---
 
-## Phase 2 — Finance, Reviews, Support
+## Database (one migration)
 
-- **Payments & Finance**: transactions table, payouts (schedule, queue, manual trigger, hold), refund management, basic fraud flags, financial reports.
-- **Reviews & Trust**: review list + moderation, dispute resolution UI, trust scores.
-- **Support & Tickets**: ticket list, detail with thread, assignment, SLA timers, canned replies, internal notes.
-- New tables: `transactions`, `payouts`, `refunds`, `reviews`, `disputes`, `tickets`, `ticket_messages`.
+New enums:
+- `discount_type` — `percentage | fixed`
+- `coupon_status` — `active | paused | expired`
+- `notification_channel` — `push | email`
+- `notification_status` — `draft | scheduled | sent`
+- `featured_slot_type` — `product | seller | category`
 
----
+New tables (all with RLS — admins manage, public/shoppers read where relevant):
 
-## Phase 3 — Marketing, Logistics, Advanced Analytics
+- `coupons` — code, discount_type, discount_value, min_order_value, max_uses, used_count, expires_at, status, applicable_sellers (uuid[]), applicable_categories (uuid[])
+- `coupon_redemptions` — coupon_id, order_id, shopper_id, discount_applied, redeemed_at (for usage stats)
+- `flash_sales` — title, description, starts_at, ends_at, discount_percentage, product_ids (uuid[]), status
+- `banners` — title, image_desktop_url, image_mobile_url, link_url, sort_order, starts_at, ends_at, active
+- `notifications` — channel, audience (`all_shoppers | all_sellers | segment`), segment_filter (jsonb), subject, body, template_key, scheduled_for, sent_at, status, open_count, click_count, recipient_count
+- `notification_templates` — key, name, subject, body
+- `featured_slots` — slot_type, entity_id, position, starts_at, ends_at
+- `referral_config` — single-row: referrer_reward, referee_reward, expiry_days, max_per_user
+- `referrals` — referrer_id, referee_id, status (`pending | completed | expired`), reward_paid, completed_at
+- `loyalty_config` — single-row: points_per_dollar, redemption_rate, expiry_months
+- `loyalty_points` — user_id, balance, lifetime_earned
+- `loyalty_adjustments` — user_id, admin_id, delta, reason, created_at
 
-- **Marketing**: coupons, flash sales, banners, push/email notifications, featured slots, referral, loyalty.
-- **Delivery & Logistics**: shipping providers config, zones & rates, shipment tracking, return logistics.
-- **Advanced Analytics**: cohort retention, conversion funnel, geographic map, custom reports with scheduling.
-- New tables: `coupons`, `banners`, `notifications`, `loyalty_points`, `shipping_zones`, `shipments`, `returns`.
+New storage bucket: `marketing-banners` (public).
 
----
+## Frontend pages
 
-## Phase 4 — Security, Compliance, Settings
+```
+src/pages/admin/marketing/
+  Marketing.tsx          // tabs container
+  Coupons.tsx            // list + create dialog + detail drawer with stats
+  FlashSales.tsx         // list + create/edit dialog
+  Banners.tsx            // grid with upload + schedule
+  Notifications.tsx      // composer + scheduled/sent list + templates
+  FeaturedSlots.tsx      // dnd-kit reorder per slot type
+  Referral.tsx           // config form + stats table
+  Loyalty.tsx            // config form + top users + manual adjust dialog
+```
 
-- 2FA enforcement per admin, active session management, password policy.
-- Security alerts dashboard.
-- Platform settings: payment gateway config, commission rates, feature flags, email templates, maintenance mode.
-- Notifications system (in-app bell with unread count + email fallback edge function).
+Add a single `/admin/marketing` route in `App.tsx` with nested tabs (so the sidebar gets one entry). Add a "Marketing" group in `AppSidebar.tsx` gated by `marketing_admin` or `super_admin`.
 
----
+## Seed data
 
-## Out of scope (across all phases unless requested)
+Seed via insert tool after migration approval: 6 coupons (mix of active/expired/paused with redemptions), 2 flash sales, 4 banners, 5 notifications (sent + scheduled), 3 featured slots per type, referral + loyalty config rows, 12 loyalty balances, sample referrals.
 
-- Building the shopper/seller-facing storefront — schema is designed so it plugs in later.
-- Real payment processing (Stripe) — refund/payout records are tracked; money movement requires a separate Stripe integration step.
-- Identity verification provider integration (KYC docs are stored & reviewed manually until a provider is wired up).
-- Carrier API integrations (mocked in Phase 3 unless you provide credentials).
+## Out of scope (call out to user)
 
----
+- Real push delivery (FCM/APNs) and real email send — records are written and "sent" is simulated; wiring to a provider is a follow-up.
+- Real-time storefront rendering of banners/featured slots — schema is ready; storefront isn't built yet.
+- Open/click tracking pixels — counts are stored but require a tracking endpoint to populate.
 
-## Decision points before I start Phase 1
+## Files
 
-I'll proceed with these defaults unless you say otherwise:
-1. Languages/RTL: English LTR only for now (Readex Pro supports Arabic — say the word for RTL).
-2. First admin: I'll show you the SQL snippet to promote your account to `super_admin` after signup.
-3. Demo seed data: I'll include a small seed script (5 shoppers, 3 sellers, 10 products, 8 orders) so the dashboard isn't empty.
+- new migration (schema + RLS + bucket + policies)
+- 8 new pages under `src/pages/admin/marketing/`
+- edits: `src/App.tsx`, `src/components/AppSidebar.tsx`
+- new dependency: `@dnd-kit/core` + `@dnd-kit/sortable` for Featured Slots reorder
 
-If any of those need to change, tell me before clicking Implement; otherwise I'll ship Phase 1 as scoped above.
+Approve and I'll ship it.
