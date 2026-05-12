@@ -113,8 +113,44 @@ export default function Merchants() {
               {bizTypes.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} aria-label="From date" />
-          <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} aria-label="To date" />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "md:col-span-2 justify-start text-left font-normal h-10",
+                  !dateRange?.from && "text-muted-foreground",
+                )}
+              >
+                <CalendarIcon className="h-4 w-4" />
+                {dateRange?.from ? (
+                  dateRange.to ? (
+                    <>{format(dateRange.from, "LLL d, y")} – {format(dateRange.to, "LLL d, y")}</>
+                  ) : (
+                    format(dateRange.from, "LLL d, y")
+                  )
+                ) : (
+                  <span>Pick a date range</span>
+                )}
+                {dateRange?.from && (
+                  <X
+                    className="ml-auto h-4 w-4 opacity-60 hover:opacity-100"
+                    onClick={(e) => { e.stopPropagation(); setDateRange(undefined); }}
+                  />
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="range"
+                selected={dateRange}
+                onSelect={setDateRange}
+                numberOfMonths={2}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
         </CardContent>
       </Card>
 
