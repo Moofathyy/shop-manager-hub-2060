@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, Eye } from "lucide-react";
+import { Check, X, Eye, CalendarIcon } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,6 +12,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { TablePagination } from "@/components/TablePagination";
 import { usePagination } from "@/hooks/usePagination";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import type { DateRange } from "react-day-picker";
+import { cn } from "@/lib/utils";
 
 interface Application {
   id: string;
@@ -33,8 +38,7 @@ export default function Merchants() {
   const [search, setSearch] = useState("");
   const [country, setCountry] = useState("all");
   const [bizType, setBizType] = useState("all");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
   useEffect(() => {
     (async () => {
@@ -64,15 +68,15 @@ export default function Merchants() {
     if (tab !== "all" && r.status !== tab) return false;
     if (country !== "all" && r.country !== country) return false;
     if (bizType !== "all" && r.business_type !== bizType) return false;
-    if (dateFrom && new Date(r.created_at) < new Date(dateFrom)) return false;
-    if (dateTo && new Date(r.created_at) > new Date(dateTo + "T23:59:59")) return false;
+    if (dateRange?.from && new Date(r.created_at) < new Date(dateRange.from.setHours(0,0,0,0))) return false;
+    if (dateRange?.to && new Date(r.created_at) > new Date(new Date(dateRange.to).setHours(23,59,59,999))) return false;
     if (search) {
       const s = search.toLowerCase();
       if (!(r.store_name?.toLowerCase().includes(s) || r.applicant_name?.toLowerCase().includes(s))) return false;
     }
     return true;
   });
-  const filterKey = `${tab}-${country}-${bizType}-${dateFrom}-${dateTo}-${search}`;
+  const filterKey = `${tab}-${country}-${bizType}-${dateRange?.from?.toISOString() ?? ""}-${dateRange?.to?.toISOString() ?? ""}-${search}`;
   const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 10, filterKey);
 
   return (
@@ -109,8 +113,44 @@ export default function Merchants() {
               {bizTypes.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} aria-label="From date" />
-          <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} aria-label="To date" />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "md:col-span-2 justify-start text-left font-normal h-10",
+                  !dateRange?.from && "text-muted-foreground",
+                )}
+              >
+                <CalendarIcon className="h-4 w-4" />
+                {dateRange?.from ? (
+                  dateRange.to ? (
+                    <>{format(dateRange.from, "LLL d, y")} – {format(dateRange.to, "LLL d, y")}</>
+                  ) : (
+                    format(dateRange.from, "LLL d, y")
+                  )
+                ) : (
+                  <span>Pick a date range</span>
+                )}
+                {dateRange?.from && (
+                  <X
+                    className="ml-auto h-4 w-4 opacity-60 hover:opacity-100"
+                    onClick={(e) => { e.stopPropagation(); setDateRange(undefined); }}
+                  />
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="range"
+                selected={dateRange}
+                onSelect={setDateRange}
+                numberOfMonths={2}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
         </CardContent>
       </Card>
 
