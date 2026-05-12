@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Download, Ban, ShieldOff, ShieldCheck } from "lucide-react";
+import { Search, Download, Ban, ShieldOff, ShieldCheck, MoreHorizontal, Eye } from "lucide-react";
+import { Link as RouterLink } from "react-router-dom";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -16,6 +17,10 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useState as useStateAlias } from "react";
 import { downloadCSV } from "@/lib/csv";
 import { logAudit } from "@/lib/audit";
 import { toast } from "@/hooks/use-toast";
