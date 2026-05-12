@@ -156,27 +156,12 @@ export default function Shoppers() {
                     <TableCell className="text-neutral-2">{new Date(s.created_at).toLocaleDateString()}</TableCell>
                     <TableCell>{statusBadge(s.status)}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {s.status !== "active" && (
-                          <Button variant="ghost" size="sm" onClick={() => updateStatus(s.id, "active", "shopper.reactivate")}>
-                            <ShieldCheck className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {s.status === "active" && (
-                          <ConfirmAction
-                            label={<ShieldOff className="h-4 w-4" />} title="Suspend shopper?"
-                            description="They will not be able to place orders until reactivated."
-                            onConfirm={() => updateStatus(s.id, "suspended", "shopper.suspend")}
-                          />
-                        )}
-                        {s.status !== "banned" && (
-                          <ConfirmAction
-                            label={<Ban className="h-4 w-4 text-destructive-foreground" />} title="Ban shopper?"
-                            description="This permanently blocks the account."
-                            destructive onConfirm={() => updateStatus(s.id, "banned", "shopper.ban")}
-                          />
-                        )}
-                      </div>
+                      <ShopperActions
+                        shopper={s}
+                        onReactivate={() => updateStatus(s.id, "active", "shopper.reactivate")}
+                        onSuspend={() => updateStatus(s.id, "suspended", "shopper.suspend")}
+                        onBan={() => updateStatus(s.id, "banned", "shopper.ban")}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
