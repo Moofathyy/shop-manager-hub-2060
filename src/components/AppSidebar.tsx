@@ -10,7 +10,7 @@ import {
 
 const main = [
   { title: "Overview", url: "/admin", icon: LayoutDashboard, end: true },
-  { title: "Notifications", url: "/admin/notifications", icon: Bell },
+  
   { title: "Shoppers", url: "/admin/shoppers", icon: Users },
   { title: "Sellers", url: "/admin/sellers", icon: Store },
   { title: "Merchant Approvals", url: "/admin/merchants", icon: ShieldCheck },
