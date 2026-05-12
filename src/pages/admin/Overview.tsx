@@ -211,7 +211,7 @@ export default function Overview() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
         {(loading ? Array.from({ length: 12 }).map((_, i) => ({ _i: i } as any)) : kpis).map((k: Kpi, i: number) => {
           const toneBg =
-            k.tone === "danger" ? "bg-danger-bg text-danger" :
+            k.tone === "danger" ? "bg-destructive-bg text-destructive" :
             k.tone === "warning" ? "bg-warning-bg text-warning" :
             "bg-primary-bg text-primary";
           const Inner = (
