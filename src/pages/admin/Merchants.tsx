@@ -45,6 +45,41 @@ export default function Merchants() {
   const [country, setCountry] = useState("all");
   const [bizType, setBizType] = useState("all");
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [rejectFor, setRejectFor] = useState<Application | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    const [{ data: apps }, { data: sellers }, { data: profs }] = await Promise.all([
+      supabase.from("merchant_applications").select("*").order("created_at", { ascending: false }),
+      supabase.from("seller_profiles").select("user_id, store_name"),
+      supabase.from("profiles").select("id, full_name, country"),
+    ]);
+    const m = new Map((sellers ?? []).map((s) => [s.user_id, s.store_name]));
+    const pm = new Map((profs ?? []).map((p) => [p.id, p]));
+    setRows((apps ?? []).map((a) => ({
+      ...a,
+      documents: (a.documents as Application["documents"]) ?? [],
+      store_name: m.get(a.seller_id) ?? undefined,
+      applicant_name: pm.get(a.seller_id)?.full_name ?? "—",
+      country: pm.get(a.seller_id)?.country ?? "—",
+    } as Application)));
+    setLoading(false);
+  };
+
+  const decide = async (a: Application, status: "approved" | "rejected", reason?: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error } = await supabase.from("merchant_applications").update({
+      status,
+      decision_reason: reason ?? null,
+      decided_at: new Date().toISOString(),
+      decided_by: user?.id ?? null,
+    }).eq("id", a.id);
+    if (error) return toast({ title: "Failed", description: error.message, variant: "destructive" });
+    await supabase.from("seller_profiles").update({ approval_status: status }).eq("user_id", a.seller_id);
+    await logAudit(`merchant.${status}`, "merchant_application", a.id, { reason });
+    toast({ title: `Application ${status}` });
+    load();
+  };
 
   useEffect(() => {
     (async () => {
