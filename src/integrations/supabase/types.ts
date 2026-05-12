@@ -213,6 +213,36 @@ export type Database = {
         }
         Relationships: []
       }
+      delivery_zones: {
+        Row: {
+          active: boolean
+          countries: string[]
+          created_at: string
+          id: string
+          name: string
+          regions: string[]
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          countries?: string[]
+          created_at?: string
+          id?: string
+          name: string
+          regions?: string[]
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          countries?: string[]
+          created_at?: string
+          id?: string
+          name?: string
+          regions?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       disputes: {
         Row: {
           created_at: string
@@ -867,6 +897,57 @@ export type Database = {
           },
         ]
       }
+      return_requests: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          label_url: string | null
+          order_id: string
+          reason: string
+          received_at: string | null
+          refund_amount: number | null
+          return_tracking_number: string | null
+          seller_id: string
+          shopper_id: string
+          status: Database["public"]["Enums"]["return_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          label_url?: string | null
+          order_id: string
+          reason: string
+          received_at?: string | null
+          refund_amount?: number | null
+          return_tracking_number?: string | null
+          seller_id: string
+          shopper_id: string
+          status?: Database["public"]["Enums"]["return_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          label_url?: string | null
+          order_id?: string
+          reason?: string
+          received_at?: string | null
+          refund_amount?: number | null
+          return_tracking_number?: string | null
+          seller_id?: string
+          shopper_id?: string
+          status?: Database["public"]["Enums"]["return_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           content: string | null
@@ -1007,6 +1088,153 @@ export type Database = {
           total_revenue?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      shipment_events: {
+        Row: {
+          created_at: string
+          id: string
+          location: string | null
+          note: string | null
+          shipment_id: string
+          status: Database["public"]["Enums"]["shipment_status"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location?: string | null
+          note?: string | null
+          shipment_id: string
+          status: Database["public"]["Enums"]["shipment_status"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location?: string | null
+          note?: string | null
+          shipment_id?: string
+          status?: Database["public"]["Enums"]["shipment_status"]
+        }
+        Relationships: []
+      }
+      shipments: {
+        Row: {
+          carrier_id: string | null
+          cost: number
+          created_at: string
+          delivered_at: string | null
+          estimated_delivery: string | null
+          failure_reason: string | null
+          id: string
+          order_id: string | null
+          status: Database["public"]["Enums"]["shipment_status"]
+          tracking_number: string | null
+          updated_at: string
+          zone_id: string | null
+        }
+        Insert: {
+          carrier_id?: string | null
+          cost?: number
+          created_at?: string
+          delivered_at?: string | null
+          estimated_delivery?: string | null
+          failure_reason?: string | null
+          id?: string
+          order_id?: string | null
+          status?: Database["public"]["Enums"]["shipment_status"]
+          tracking_number?: string | null
+          updated_at?: string
+          zone_id?: string | null
+        }
+        Update: {
+          carrier_id?: string | null
+          cost?: number
+          created_at?: string
+          delivered_at?: string | null
+          estimated_delivery?: string | null
+          failure_reason?: string | null
+          id?: string
+          order_id?: string | null
+          status?: Database["public"]["Enums"]["shipment_status"]
+          tracking_number?: string | null
+          updated_at?: string
+          zone_id?: string | null
+        }
+        Relationships: []
+      }
+      shipping_carriers: {
+        Row: {
+          active: boolean
+          api_key: string | null
+          code: string
+          created_at: string
+          default_for_regions: string[]
+          id: string
+          name: string
+          regions: string[]
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          api_key?: string | null
+          code: string
+          created_at?: string
+          default_for_regions?: string[]
+          id?: string
+          name: string
+          regions?: string[]
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          api_key?: string | null
+          code?: string
+          created_at?: string
+          default_for_regions?: string[]
+          id?: string
+          name?: string
+          regions?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shipping_rates: {
+        Row: {
+          active: boolean
+          carrier_id: string | null
+          created_at: string
+          flat_amount: number | null
+          id: string
+          rate_type: Database["public"]["Enums"]["rate_type"]
+          seller_tier: string | null
+          updated_at: string
+          weight_brackets: Json
+          zone_id: string
+        }
+        Insert: {
+          active?: boolean
+          carrier_id?: string | null
+          created_at?: string
+          flat_amount?: number | null
+          id?: string
+          rate_type: Database["public"]["Enums"]["rate_type"]
+          seller_tier?: string | null
+          updated_at?: string
+          weight_brackets?: Json
+          zone_id: string
+        }
+        Update: {
+          active?: boolean
+          carrier_id?: string | null
+          created_at?: string
+          flat_amount?: number | null
+          id?: string
+          rate_type?: Database["public"]["Enums"]["rate_type"]
+          seller_tier?: string | null
+          updated_at?: string
+          weight_brackets?: Json
+          zone_id?: string
         }
         Relationships: []
       }
@@ -1227,10 +1455,26 @@ export type Database = {
         | "rejected"
         | "unpublished"
         | "out_of_stock"
+      rate_type: "flat" | "weight" | "free"
       referral_status: "pending" | "completed" | "expired"
       refund_status: "pending" | "approved" | "rejected" | "processed"
+      return_status:
+        | "requested"
+        | "approved"
+        | "rejected"
+        | "label_issued"
+        | "in_transit"
+        | "received"
+        | "refunded"
       review_status: "published" | "flagged" | "removed"
       review_target: "product" | "seller"
+      shipment_status:
+        | "pending"
+        | "in_transit"
+        | "delivered"
+        | "delayed"
+        | "failed"
+        | "returned"
       ticket_priority: "low" | "medium" | "high" | "urgent"
       ticket_status: "open" | "in_progress" | "waiting" | "resolved" | "closed"
       txn_status: "pending" | "succeeded" | "failed" | "cancelled"
@@ -1406,10 +1650,28 @@ export const Constants = {
         "unpublished",
         "out_of_stock",
       ],
+      rate_type: ["flat", "weight", "free"],
       referral_status: ["pending", "completed", "expired"],
       refund_status: ["pending", "approved", "rejected", "processed"],
+      return_status: [
+        "requested",
+        "approved",
+        "rejected",
+        "label_issued",
+        "in_transit",
+        "received",
+        "refunded",
+      ],
       review_status: ["published", "flagged", "removed"],
       review_target: ["product", "seller"],
+      shipment_status: [
+        "pending",
+        "in_transit",
+        "delivered",
+        "delayed",
+        "failed",
+        "returned",
+      ],
       ticket_priority: ["low", "medium", "high", "urgent"],
       ticket_status: ["open", "in_progress", "waiting", "resolved", "closed"],
       txn_status: ["pending", "succeeded", "failed", "cancelled"],
