@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Users, Store, ShoppingBag, Package, Tag, FileSearch, ShieldCheck,
-  DollarSign, MessageSquare, LifeBuoy, Megaphone, Bell, BarChart3, Truck,
+  DollarSign, MessageSquare, LifeBuoy, Megaphone, BarChart3, Truck,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
