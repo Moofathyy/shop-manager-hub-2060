@@ -93,9 +93,18 @@ export default function Categories() {
                           <TableCell className="text-neutral-2">{c.slug}</TableCell>
                           <TableCell className="text-right">{c.sort_order}</TableCell>
                           <TableCell className="text-right">
-                            <Button variant="ghost" size="sm" onClick={() => remove(c.id)}>
-                              <Trash2 className="h-4 w-4 text-destructive-foreground" />
-                            </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => remove(c.id)} className="text-destructive focus:text-destructive">
+                                  <Trash2 className="h-4 w-4" /> Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </TableCell>
                         </TableRow>
                       ))
