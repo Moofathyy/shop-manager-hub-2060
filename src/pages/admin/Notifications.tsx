@@ -53,7 +53,7 @@ export default function Notifications() {
         supabase.from("orders").select("id, created_at, total, status").order("created_at", { ascending: false }).limit(10),
         supabase.from("reviews").select("id, created_at, rating, status").eq("status", "flagged").order("created_at", { ascending: false }).limit(10),
         supabase.from("disputes").select("id, created_at, reason, status").eq("status", "open").order("created_at", { ascending: false }).limit(10),
-        supabase.from("tickets").select("id, created_at, subject, status, priority").in("status", ["open", "pending"]).order("created_at", { ascending: false }).limit(10),
+        supabase.from("tickets").select("id, created_at, subject, status, priority").in("status", ["open", "in_progress", "waiting"]).order("created_at", { ascending: false }).limit(10),
         supabase.from("refunds").select("id, created_at, amount, status").eq("status", "pending").order("created_at", { ascending: false }).limit(10),
         supabase.from("products").select("id, created_at, title, status").eq("status", "pending").order("created_at", { ascending: false }).limit(10),
       ]);
