@@ -47,6 +47,48 @@ export type Database = {
         }
         Relationships: []
       }
+      banners: {
+        Row: {
+          active: boolean
+          created_at: string
+          ends_at: string | null
+          id: string
+          image_desktop_url: string | null
+          image_mobile_url: string | null
+          link_url: string | null
+          sort_order: number
+          starts_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          image_desktop_url?: string | null
+          image_mobile_url?: string | null
+          link_url?: string | null
+          sort_order?: number
+          starts_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          image_desktop_url?: string | null
+          image_mobile_url?: string | null
+          link_url?: string | null
+          sort_order?: number
+          starts_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -81,6 +123,95 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      coupon_redemptions: {
+        Row: {
+          coupon_id: string
+          discount_applied: number
+          id: string
+          order_id: string | null
+          redeemed_at: string
+          shopper_id: string
+        }
+        Insert: {
+          coupon_id: string
+          discount_applied: number
+          id?: string
+          order_id?: string | null
+          redeemed_at?: string
+          shopper_id: string
+        }
+        Update: {
+          coupon_id?: string
+          discount_applied?: number
+          id?: string
+          order_id?: string | null
+          redeemed_at?: string
+          shopper_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupon_redemptions_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coupons: {
+        Row: {
+          applicable_categories: string[]
+          applicable_sellers: string[]
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          discount_value: number
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          min_order_value: number
+          status: Database["public"]["Enums"]["coupon_status"]
+          updated_at: string
+          used_count: number
+        }
+        Insert: {
+          applicable_categories?: string[]
+          applicable_sellers?: string[]
+          code: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          min_order_value?: number
+          status?: Database["public"]["Enums"]["coupon_status"]
+          updated_at?: string
+          used_count?: number
+        }
+        Update: {
+          applicable_categories?: string[]
+          applicable_sellers?: string[]
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          discount_type?: Database["public"]["Enums"]["discount_type"]
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          min_order_value?: number
+          status?: Database["public"]["Enums"]["coupon_status"]
+          updated_at?: string
+          used_count?: number
+        }
+        Relationships: []
       }
       disputes: {
         Row: {
@@ -129,6 +260,150 @@ export type Database = {
           },
         ]
       }
+      featured_slots: {
+        Row: {
+          active: boolean
+          created_at: string
+          ends_at: string | null
+          entity_id: string
+          id: string
+          position: number
+          slot_type: Database["public"]["Enums"]["featured_slot_type"]
+          starts_at: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          ends_at?: string | null
+          entity_id: string
+          id?: string
+          position?: number
+          slot_type: Database["public"]["Enums"]["featured_slot_type"]
+          starts_at?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          ends_at?: string | null
+          entity_id?: string
+          id?: string
+          position?: number
+          slot_type?: Database["public"]["Enums"]["featured_slot_type"]
+          starts_at?: string | null
+        }
+        Relationships: []
+      }
+      flash_sales: {
+        Row: {
+          created_at: string
+          description: string | null
+          discount_percentage: number
+          ends_at: string
+          id: string
+          product_ids: string[]
+          starts_at: string
+          status: Database["public"]["Enums"]["flash_sale_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          discount_percentage: number
+          ends_at: string
+          id?: string
+          product_ids?: string[]
+          starts_at: string
+          status?: Database["public"]["Enums"]["flash_sale_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number
+          ends_at?: string
+          id?: string
+          product_ids?: string[]
+          starts_at?: string
+          status?: Database["public"]["Enums"]["flash_sale_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      loyalty_adjustments: {
+        Row: {
+          admin_id: string | null
+          created_at: string
+          delta: number
+          id: string
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          admin_id?: string | null
+          created_at?: string
+          delta: number
+          id?: string
+          reason: string
+          user_id: string
+        }
+        Update: {
+          admin_id?: string | null
+          created_at?: string
+          delta?: number
+          id?: string
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      loyalty_config: {
+        Row: {
+          expiry_months: number
+          id: number
+          points_per_dollar: number
+          redemption_rate: number
+          updated_at: string
+        }
+        Insert: {
+          expiry_months?: number
+          id?: number
+          points_per_dollar?: number
+          redemption_rate?: number
+          updated_at?: string
+        }
+        Update: {
+          expiry_months?: number
+          id?: number
+          points_per_dollar?: number
+          redemption_rate?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      loyalty_points: {
+        Row: {
+          balance: number
+          lifetime_earned: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          lifetime_earned?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          lifetime_earned?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       merchant_applications: {
         Row: {
           business_type: string | null
@@ -165,6 +440,90 @@ export type Database = {
           kyc_result?: Json | null
           seller_id?: string
           status?: Database["public"]["Enums"]["approval_status"]
+        }
+        Relationships: []
+      }
+      notification_templates: {
+        Row: {
+          body: string
+          channel: Database["public"]["Enums"]["notification_channel"]
+          created_at: string
+          id: string
+          key: string
+          name: string
+          subject: string | null
+        }
+        Insert: {
+          body: string
+          channel: Database["public"]["Enums"]["notification_channel"]
+          created_at?: string
+          id?: string
+          key: string
+          name: string
+          subject?: string | null
+        }
+        Update: {
+          body?: string
+          channel?: Database["public"]["Enums"]["notification_channel"]
+          created_at?: string
+          id?: string
+          key?: string
+          name?: string
+          subject?: string | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          audience: Database["public"]["Enums"]["notification_audience"]
+          body: string
+          channel: Database["public"]["Enums"]["notification_channel"]
+          click_count: number
+          created_at: string
+          created_by: string | null
+          id: string
+          open_count: number
+          recipient_count: number
+          scheduled_for: string | null
+          segment_filter: Json | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["notification_status"]
+          subject: string | null
+          template_key: string | null
+        }
+        Insert: {
+          audience: Database["public"]["Enums"]["notification_audience"]
+          body: string
+          channel: Database["public"]["Enums"]["notification_channel"]
+          click_count?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          open_count?: number
+          recipient_count?: number
+          scheduled_for?: string | null
+          segment_filter?: Json | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notification_status"]
+          subject?: string | null
+          template_key?: string | null
+        }
+        Update: {
+          audience?: Database["public"]["Enums"]["notification_audience"]
+          body?: string
+          channel?: Database["public"]["Enums"]["notification_channel"]
+          click_count?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          open_count?: number
+          recipient_count?: number
+          scheduled_for?: string | null
+          segment_filter?: Json | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notification_status"]
+          subject?: string | null
+          template_key?: string | null
         }
         Relationships: []
       }
@@ -401,6 +760,63 @@ export type Database = {
           phone?: string | null
           status?: Database["public"]["Enums"]["user_status"]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      referral_config: {
+        Row: {
+          expiry_days: number
+          id: number
+          max_per_user: number
+          referee_reward: number
+          referrer_reward: number
+          updated_at: string
+        }
+        Insert: {
+          expiry_days?: number
+          id?: number
+          max_per_user?: number
+          referee_reward?: number
+          referrer_reward?: number
+          updated_at?: string
+        }
+        Update: {
+          expiry_days?: number
+          id?: number
+          max_per_user?: number
+          referee_reward?: number
+          referrer_reward?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          referee_id: string
+          referrer_id: string
+          reward_paid: number
+          status: Database["public"]["Enums"]["referral_status"]
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referee_id: string
+          referrer_id: string
+          reward_paid?: number
+          status?: Database["public"]["Enums"]["referral_status"]
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referee_id?: string
+          referrer_id?: string
+          reward_paid?: number
+          status?: Database["public"]["Enums"]["referral_status"]
         }
         Relationships: []
       }
@@ -739,6 +1155,8 @@ export type Database = {
         | "shopper"
         | "seller"
       approval_status: "pending" | "approved" | "rejected" | "needs_info"
+      coupon_status: "active" | "paused" | "expired"
+      discount_type: "percentage" | "fixed"
       dispute_status:
         | "open"
         | "in_review"
@@ -746,7 +1164,12 @@ export type Database = {
         | "resolved_seller"
         | "resolved_split"
         | "closed"
+      featured_slot_type: "product" | "seller" | "category"
+      flash_sale_status: "scheduled" | "active" | "ended" | "paused"
       kyc_status: "not_submitted" | "submitted" | "verified" | "failed"
+      notification_audience: "all_shoppers" | "all_sellers" | "segment"
+      notification_channel: "push" | "email"
+      notification_status: "draft" | "scheduled" | "sent"
       order_status:
         | "pending"
         | "confirmed"
@@ -762,6 +1185,7 @@ export type Database = {
         | "rejected"
         | "unpublished"
         | "out_of_stock"
+      referral_status: "pending" | "completed" | "expired"
       refund_status: "pending" | "approved" | "rejected" | "processed"
       review_status: "published" | "flagged" | "removed"
       review_target: "product" | "seller"
@@ -907,6 +1331,8 @@ export const Constants = {
         "seller",
       ],
       approval_status: ["pending", "approved", "rejected", "needs_info"],
+      coupon_status: ["active", "paused", "expired"],
+      discount_type: ["percentage", "fixed"],
       dispute_status: [
         "open",
         "in_review",
@@ -915,7 +1341,12 @@ export const Constants = {
         "resolved_split",
         "closed",
       ],
+      featured_slot_type: ["product", "seller", "category"],
+      flash_sale_status: ["scheduled", "active", "ended", "paused"],
       kyc_status: ["not_submitted", "submitted", "verified", "failed"],
+      notification_audience: ["all_shoppers", "all_sellers", "segment"],
+      notification_channel: ["push", "email"],
+      notification_status: ["draft", "scheduled", "sent"],
       order_status: [
         "pending",
         "confirmed",
@@ -933,6 +1364,7 @@ export const Constants = {
         "unpublished",
         "out_of_stock",
       ],
+      referral_status: ["pending", "completed", "expired"],
       refund_status: ["pending", "approved", "rejected", "processed"],
       review_status: ["published", "flagged", "removed"],
       review_target: ["product", "seller"],
