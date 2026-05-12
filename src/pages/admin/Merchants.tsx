@@ -50,6 +50,7 @@ export default function Merchants() {
   const [bizType, setBizType] = useState("all");
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [rejectFor, setRejectFor] = useState<Application | null>(null);
+  const navigate = useNavigate();
 
   const load = async () => {
     setLoading(true);
