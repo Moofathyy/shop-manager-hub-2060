@@ -1,80 +1,83 @@
-# Analytics & Reports Module
+# Delivery & Logistics Module
 
-Centralized platform performance insights with KPIs, charts, cohort analysis, geo breakdown, and a custom report builder.
+Admin section for managing carriers, shipping zones/rates, live shipment tracking, and return logistics.
 
 ## Pages & Structure
 
-New section under `src/pages/admin/analytics/` with a tabbed container:
+New folder `src/pages/admin/logistics/` with a tabbed container.
 
-- `Analytics.tsx` — tabs container (Dashboard / Custom Reports)
-- `Dashboard.tsx` — KPI cards + all charts on one scrollable page
-- `CustomReports.tsx` — date-range + metric/dimension builder with table preview and CSV export
+- `Logistics.tsx` — tabs container
+- `Carriers.tsx` — list, create, edit, toggle, test rate
+- `Zones.tsx` — zones list + rates per zone (flat / weight / free) with seller-tier overrides
+- `Shipments.tsx` — live dashboard with filters and actions (re-deliver / return)
+- `Returns.tsx` — return requests queue with approve/reject, generate label, refund-on-receipt
 
-Route: `/admin/analytics`. Sidebar entry under **Operations** with `BarChart3` icon.
+Route: `/admin/logistics`. Sidebar entry under **Operations** with `Truck` icon.
 
-## Dashboard contents
+## Database (one migration)
 
-**KPI cards (top row, 5 across):**
-- GMV (sum of `orders.total`)
-- Net revenue (GMV − refunds)
-- AOV (GMV ÷ order count)
-- Shoppers (total / new this month / returning)
-- Sellers (total / new / active in last 30d)
-- Conversion rate, cart abandonment — shown as static demo values (no visits/sessions table exists yet)
+New enums:
+- `shipment_status`: `pending`, `in_transit`, `delivered`, `delayed`, `failed`, `returned`
+- `return_status`: `requested`, `approved`, `rejected`, `label_issued`, `in_transit`, `received`, `refunded`
+- `rate_type`: `flat`, `weight`, `free`
 
-Each card shows current value and % delta vs previous period.
+New tables (all RLS — admins manage; sellers/shoppers see their own where relevant):
 
-**Charts:**
-- Revenue over time — line (recharts), toggle Daily / Weekly / Monthly via tabs
-- Orders over time — bar chart with same granularity toggle
-- Top 10 products by revenue — horizontal bar list
-- Top 10 sellers by revenue — horizontal bar list
-- Top categories by sales — donut/pie
-- Geographic sales — country breakdown (table + bars from `profiles.country` joined to orders via `shopper_id`); no real map library — country bar list keeps bundle small
-- Cohort retention — matrix table: rows = registration month, cols = months since signup, cells = % retained (computed from `profiles.created_at` + their order activity months)
-- Funnel — vertical 5-stage funnel (visits → product views → add to cart → checkout → purchase); since we have no event tracking, derive checkout/purchase from `orders` and use illustrative ratios for the upper stages
+- `shipping_carriers` — `name`, `code` (slug), `api_key` (text, masked in UI), `regions` (text[]), `active`, `default_for_regions` (text[])
+- `delivery_zones` — `name`, `countries` (text[]), `regions` (text[]), `active`
+- `shipping_rates` — `zone_id`, `carrier_id` (nullable), `rate_type`, `flat_amount` (numeric, nullable), `weight_brackets` (jsonb, e.g. `[{maxKg:1, price:5}, ...]`), `seller_tier` (text, nullable for default), `active`
+- `shipments` — `order_id`, `carrier_id`, `zone_id`, `tracking_number`, `status` (shipment_status), `estimated_delivery`, `delivered_at`, `failure_reason`, `cost`
+- `shipment_events` — `shipment_id`, `status`, `location` (text), `note`, `created_at` (for tracking timeline)
+- `return_requests` — `order_id`, `shopper_id`, `seller_id`, `reason`, `status` (return_status), `return_tracking_number`, `label_url`, `refund_amount`, `decided_by`, `decided_at`, `received_at`
 
-## Custom report builder
+Triggers: `tg_set_updated_at` on the tables that have `updated_at`.
 
-Form:
-- Date range picker (shadcn calendar, two popovers)
-- Metrics multi-select: GMV, orders, AOV, refund amount, refund count, new shoppers, new sellers
-- Dimension (group by): seller / category / country / product / day
-- "Run report" button → renders results in a `Table`
-- "Export CSV" downloads as `report-YYYY-MM-DD.csv`
-- "Schedule" dialog: frequency (daily/weekly/monthly) + recipient email → inserts into a new `scheduled_reports` table (no actual email send — just stored; surfaced under "Scheduled reports" list with delete)
+Seed data (small but useful):
+- 4 carriers (DHL, FedEx, Aramex, Local Courier)
+- 4 zones (North America, Europe, Middle East, Asia Pacific)
+- 8 rates (mix of flat/weight/free across zones)
+- 12 shipments across multiple statuses linked to real `orders.id` if available, else freestanding
+- 5 return requests across all statuses
 
-Excel/PDF export are **out of scope** for v1 (CSV only). Real email delivery of scheduled reports is also out of scope — records are stored.
+## Frontend details
 
-## Database
+**Carriers:**
+- Table: name, code, regions, active toggle, default-for chips, actions (edit, test rate, delete)
+- Create/edit dialog: name, code, API key (password input), regions (comma list), active checkbox
+- "Test rate" dialog: pick zone + weight → shows computed rate via the same formula
 
-One migration:
-- `scheduled_reports` table: `name`, `config jsonb` (metrics, dimension, date range pattern), `frequency` (`daily|weekly|monthly`), `recipient_email`, `last_run_at`, `next_run_at`, `created_by`, `active`
-- RLS: admins manage all (`is_admin(auth.uid())`)
+**Zones & Rates:**
+- Two-column layout: left list of zones; right shows rates for selected zone
+- Create rate dialog with rate type radio; flat amount or weight brackets editor (add/remove rows); optional seller_tier ("standard" | "premium" | "enterprise")
 
-No seeding needed; data is computed from existing `orders`, `order_items`, `products`, `profiles`, `seller_profiles`, `categories`, `refunds`.
+**Shipments dashboard:**
+- KPI cards: in transit, delayed, delivered today, failed
+- Filters: status multi-select, carrier select, date range, search by tracking #
+- Table with status badges; row click → drawer with timeline (from `shipment_events`), order link
+- Actions on failed: "Trigger re-delivery" (status → pending + event), "Return to seller" (status → returned + event)
+
+**Returns:**
+- Queue table with filter by status
+- Detail drawer: reason, order link, status, return tracking
+- Actions: Approve → status `approved`, Generate label → status `label_issued` and fills `return_tracking_number` (mock) + `label_url` (`#`), Mark received → `received` + sets `received_at`, Issue refund → creates a row in `refunds` (status `approved`) and sets return status `refunded`
 
 ## Files
 
 **New:**
-- `src/pages/admin/analytics/Analytics.tsx`
-- `src/pages/admin/analytics/Dashboard.tsx`
-- `src/pages/admin/analytics/CustomReports.tsx`
-- `src/lib/analytics.ts` — query helpers (KPIs, time series, top lists, cohort, funnel)
-- `src/lib/csvExport.ts` — small CSV stringifier
-- One migration for `scheduled_reports`
+- `src/pages/admin/logistics/Logistics.tsx`
+- `src/pages/admin/logistics/Carriers.tsx`
+- `src/pages/admin/logistics/Zones.tsx`
+- `src/pages/admin/logistics/Shipments.tsx`
+- `src/pages/admin/logistics/Returns.tsx`
+- One migration (enums + tables + RLS + seed)
 
 **Edited:**
 - `src/App.tsx` — route
 - `src/components/AppSidebar.tsx` — sidebar entry
 
-## Dependencies
-
-`recharts` is already in the project (used elsewhere). `date-fns` is already in use. No new dependencies.
-
 ## Out of scope
 
-- Real session/page-view tracking (no events table) — conversion/abandonment/funnel upper stages use illustrative values clearly labeled "estimated"
-- Actual world map visualization — using a country bar list
-- Excel and PDF export — CSV only
-- Real email delivery of scheduled reports — only stored
+- Real carrier API integration (rates and tracking are simulated locally using the configured rate rules and stored events)
+- Real shipping-label PDF generation (label_url stored as `#` placeholder)
+- Customer-facing return request creation (this admin module only manages requests already stored)
+- Real-time push updates on the dashboard (manual refresh)
