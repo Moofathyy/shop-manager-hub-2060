@@ -169,6 +169,23 @@ export default function Overview() {
     })();
   }, []);
 
+  // Orders per day for the last 30 days (fixed daily bucket)
+  const ordersPerDay = useMemo(() => {
+    const now = new Date();
+    const buckets: Record<string, number> = {};
+    const order: string[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const k = isoDay(new Date(now.getTime() - i * 86400000));
+      buckets[k] = 0;
+      order.push(k);
+    }
+    orders.forEach((o) => {
+      const k = isoDay(new Date(o.created_at));
+      if (k in buckets) buckets[k] += 1;
+    });
+    return order.map((k) => ({ date: k.slice(5), orders: buckets[k] }));
+  }, [orders]);
+
   // Aggregate revenue/orders timeseries based on granularity
   const timeseries = useMemo(() => {
     if (!orders.length) return [] as { label: string; revenue: number; orders: number }[];
@@ -275,6 +292,24 @@ export default function Overview() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Orders per day */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Orders per day (last 30 days)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={ordersPerDay}>
+              <CartesianGrid stroke="hsl(var(--neutral-6))" strokeDasharray="3 3" />
+              <XAxis dataKey="date" stroke="hsl(var(--neutral-4))" fontSize={12} />
+              <YAxis stroke="hsl(var(--neutral-4))" fontSize={12} allowDecimals={false} />
+              <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--neutral-6))" }} />
+              <Bar dataKey="orders" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} name="Orders" />
+            </BarChart>
+          </ResponsiveContainer>
         </CardContent>
       </Card>
 
