@@ -145,30 +145,47 @@ export default function Sellers() {
                     <TableCell><Badge variant="secondary">{s.kyc_status.replace("_", " ")}</Badge></TableCell>
                     <TableCell>{approvalBadge(s.approval_status)}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        {s.approval_status === "pending" && (
-                          <>
-                            <Button variant="ghost" size="sm" onClick={() => decide(s.user_id, "approved")}>
-                              <CheckCircle2 className="h-4 w-4 text-success" />
-                            </Button>
-                            <Button variant="ghost" size="sm" onClick={() => decide(s.user_id, "rejected")}>
-                              <XCircle className="h-4 w-4 text-destructive-foreground" />
-                            </Button>
-                          </>
-                        )}
-                        {s.status === "active" ? (
-                          <Button variant="ghost" size="sm" onClick={() => setUserStatus(s.user_id, "suspended")}>
-                            <ShieldOff className="h-4 w-4" />
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
                           </Button>
-                        ) : s.status === "suspended" ? (
-                          <Button variant="ghost" size="sm" onClick={() => setUserStatus(s.user_id, "active")}>
-                            <ShieldCheck className="h-4 w-4" />
-                          </Button>
-                        ) : null}
-                        <Button variant="ghost" size="sm" onClick={() => setUserStatus(s.user_id, "banned")}>
-                          <Ban className="h-4 w-4 text-destructive-foreground" />
-                        </Button>
-                      </div>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link to={`/admin/sellers/${s.user_id}`}>
+                              <Eye className="h-4 w-4" /> View details
+                            </Link>
+                          </DropdownMenuItem>
+                          {s.approval_status === "pending" && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => decide(s.user_id, "approved")}>
+                                <CheckCircle2 className="h-4 w-4 text-success" /> Approve
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => decide(s.user_id, "rejected")} className="text-destructive focus:text-destructive">
+                                <XCircle className="h-4 w-4" /> Reject
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                          <DropdownMenuSeparator />
+                          {s.status === "active" && (
+                            <DropdownMenuItem onClick={() => setUserStatus(s.user_id, "suspended")}>
+                              <ShieldOff className="h-4 w-4" /> Suspend
+                            </DropdownMenuItem>
+                          )}
+                          {s.status === "suspended" && (
+                            <DropdownMenuItem onClick={() => setUserStatus(s.user_id, "active")}>
+                              <ShieldCheck className="h-4 w-4 text-success" /> Reactivate
+                            </DropdownMenuItem>
+                          )}
+                          {s.status !== "banned" && (
+                            <DropdownMenuItem onClick={() => setUserStatus(s.user_id, "banned")} className="text-destructive focus:text-destructive">
+                              <Ban className="h-4 w-4" /> Ban
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
