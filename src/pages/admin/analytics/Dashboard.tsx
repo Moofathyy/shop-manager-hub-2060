@@ -21,26 +21,46 @@ const COLORS = ["hsl(var(--primary))", "hsl(var(--success))", "hsl(var(--warning
 const fmtCurrency = (n: number) => `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 const fmtPct = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(1)}%`;
 
-function KpiCard({ icon: Icon, label, value, delta, sub }: { icon: any; label: string; value: string; delta?: number; sub?: string }) {
+const GRADIENTS = [
+  "from-emerald-400 to-teal-500",
+  "from-fuchsia-500 to-pink-500",
+  "from-amber-400 to-orange-500",
+  "from-blue-500 to-indigo-500",
+  "from-rose-400 to-red-500",
+  "from-violet-500 to-purple-600",
+];
+
+function KpiCard({ icon: Icon, label, value, delta, sub, index = 0 }: { icon: any; label: string; value: string; delta?: number; sub?: string; index?: number }) {
   const positive = (delta ?? 0) >= 0;
+  const gradient = GRADIENTS[index % GRADIENTS.length];
   return (
-    <Card>
-      <CardContent className="p-4 space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-caption text-neutral-3">{label}</span>
-          <div className="h-8 w-8 rounded-input bg-primary/10 flex items-center justify-center">
-            <Icon className="h-4 w-4 text-primary" />
+    <Card className={`group relative overflow-hidden border-0 text-white bg-gradient-to-br ${gradient} shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300`}>
+      <div aria-hidden className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/15 blur-2xl" />
+      <div aria-hidden className="pointer-events-none absolute -right-10 -bottom-10 h-28 w-28 rounded-full bg-white/10" />
+      <CardContent className="relative p-4 space-y-3">
+        <div className="flex items-start justify-between">
+          <div className="h-10 w-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/30">
+            <Icon className="h-5 w-5 text-white" />
           </div>
-        </div>
-        <div className="text-h2 text-neutral-1 font-bold">{value}</div>
-        <div className="flex items-center gap-2 text-caption">
-          {delta !== undefined && (
-            <span className={`flex items-center gap-1 ${positive ? "text-success" : "text-destructive-foreground"}`}>
-              {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-              {fmtPct(delta)}
-            </span>
+          {(delta !== undefined || sub) && (
+            <div className="flex items-center gap-1 rounded-full bg-white/20 backdrop-blur-sm px-2 py-1 text-[11px] font-medium ring-1 ring-white/25">
+              {delta !== undefined ? (
+                <>
+                  {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                  {fmtPct(delta)}
+                </>
+              ) : (
+                <span className="opacity-90">{sub}</span>
+              )}
+            </div>
           )}
-          {sub && <span className="text-neutral-4">{sub}</span>}
+        </div>
+        <div>
+          <div className="text-caption font-medium text-white/85">{label}</div>
+          <div className="text-h2 font-bold mt-0.5 tabular-nums">{value}</div>
+          {sub && delta !== undefined && (
+            <div className="text-[11px] text-white/75 mt-0.5">{sub}</div>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -93,20 +113,20 @@ export default function Dashboard() {
     <div className="space-y-6">
       {/* KPI cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <KpiCard icon={DollarSign} label="GMV" value={fmtCurrency(kpis.gmv)} delta={kpis.gmvDelta} sub="vs prev 30d" />
-        <KpiCard icon={DollarSign} label="Net Revenue" value={fmtCurrency(kpis.netRevenue)} sub="GMV − refunds" />
-        <KpiCard icon={ShoppingBag} label="AOV" value={fmtCurrency(kpis.aov)} sub={`${kpis.orderCount} orders`} />
-        <KpiCard icon={Users} label="Shoppers" value={kpis.totalShoppers.toLocaleString()} delta={kpis.shoppersDelta} sub={`${kpis.newShoppers} new`} />
-        <KpiCard icon={Store} label="Sellers" value={kpis.totalSellers.toLocaleString()} sub={`${kpis.activeSellers} active`} />
-        <KpiCard icon={Percent} label="Conv. Rate" value={`${kpis.conversionRate}%`} sub="estimated" />
+        <KpiCard index={0} icon={DollarSign} label="GMV" value={fmtCurrency(kpis.gmv)} delta={kpis.gmvDelta} sub="vs prev 30d" />
+        <KpiCard index={1} icon={DollarSign} label="Net Revenue" value={fmtCurrency(kpis.netRevenue)} sub="GMV − refunds" />
+        <KpiCard index={2} icon={ShoppingBag} label="AOV" value={fmtCurrency(kpis.aov)} sub={`${kpis.orderCount} orders`} />
+        <KpiCard index={3} icon={Users} label="Shoppers" value={kpis.totalShoppers.toLocaleString()} delta={kpis.shoppersDelta} sub={`${kpis.newShoppers} new`} />
+        <KpiCard index={4} icon={Store} label="Sellers" value={kpis.totalSellers.toLocaleString()} sub={`${kpis.activeSellers} active`} />
+        <KpiCard index={5} icon={Percent} label="Conv. Rate" value={`${kpis.conversionRate}%`} sub="estimated" />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <KpiCard icon={ShoppingCart} label="Cart Abandonment" value={`${kpis.cartAbandonment}%`} sub="estimated" />
-        <KpiCard icon={Users} label="New shoppers" value={kpis.newShoppers.toLocaleString()} sub="last 30d" />
-        <KpiCard icon={Users} label="Returning" value={kpis.returningShoppers.toLocaleString()} sub="purchased again" />
-        <KpiCard icon={Store} label="New sellers" value={kpis.newSellers.toLocaleString()} sub="last 30d" />
-        <KpiCard icon={ShoppingBag} label="Orders" value={kpis.orderCount.toLocaleString()} delta={kpis.ordersDelta} sub="vs prev 30d" />
-        <KpiCard icon={DollarSign} label="Refunded" value={fmtCurrency(kpis.gmv - kpis.netRevenue)} sub="approved refunds" />
+        <KpiCard index={0} icon={ShoppingCart} label="Cart Abandonment" value={`${kpis.cartAbandonment}%`} sub="estimated" />
+        <KpiCard index={1} icon={Users} label="New shoppers" value={kpis.newShoppers.toLocaleString()} sub="last 30d" />
+        <KpiCard index={2} icon={Users} label="Returning" value={kpis.returningShoppers.toLocaleString()} sub="purchased again" />
+        <KpiCard index={3} icon={Store} label="New sellers" value={kpis.newSellers.toLocaleString()} sub="last 30d" />
+        <KpiCard index={4} icon={ShoppingBag} label="Orders" value={kpis.orderCount.toLocaleString()} delta={kpis.ordersDelta} sub="vs prev 30d" />
+        <KpiCard index={5} icon={DollarSign} label="Refunded" value={fmtCurrency(kpis.gmv - kpis.netRevenue)} sub="approved refunds" />
       </div>
 
       {/* Time series */}
