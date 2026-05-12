@@ -253,44 +253,47 @@ export default function Overview() {
       {/* FEATURED KPI ROW (GMV & Revenue) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {(loading ? Array.from({ length: 4 }).map((_, i) => ({ _i: i } as any)) : kpis.filter((k) => k.featured)).map(
-          (k: Kpi, i: number) => (
-            <Card
-              key={i}
-              className="group relative overflow-hidden border-neutral-6 animate-fade-in"
-              style={{ animationDelay: `${i * 60}ms` }}
-            >
-              <div
-                aria-hidden
-                className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-accent/8 opacity-90"
-              />
-              <div
-                aria-hidden
-                className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-primary/15 blur-2xl transition-all duration-500 group-hover:scale-125 group-hover:bg-primary/25"
-              />
-              <CardContent className="relative p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-light text-primary-foreground shadow-md shadow-primary/25">
-                    {loading ? <DollarSign className="h-5 w-5" /> : <k.icon className="h-5 w-5" />}
+          (k: Kpi, i: number) => {
+            const featuredGradients = [
+              "from-emerald-400 to-teal-500",
+              "from-fuchsia-500 to-pink-500",
+              "from-amber-400 to-orange-500",
+              "from-blue-500 to-indigo-500",
+            ];
+            const gradient = featuredGradients[i % featuredGradients.length];
+            return (
+              <Card
+                key={i}
+                className={`group relative overflow-hidden border-0 text-white shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 animate-fade-in bg-gradient-to-br ${gradient}`}
+                style={{ animationDelay: `${i * 60}ms` }}
+              >
+                <div aria-hidden className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/15 blur-2xl transition-all duration-500 group-hover:scale-125" />
+                <div aria-hidden className="pointer-events-none absolute -right-12 -bottom-12 h-32 w-32 rounded-full bg-white/10" />
+                <CardContent className="relative p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm ring-1 ring-white/30">
+                      {loading ? <DollarSign className="h-5 w-5 text-white" /> : <k.icon className="h-5 w-5 text-white" />}
+                    </div>
+                    <div className="inline-flex items-center gap-1 rounded-full bg-white/20 backdrop-blur-sm px-2 py-1 text-[11px] font-medium ring-1 ring-white/25">
+                      <TrendingUp className="h-3 w-3" /> live
+                    </div>
                   </div>
-                  <Badge variant="outline" className="border-success/30 bg-success-bg text-success font-medium">
-                    <TrendingUp className="h-3 w-3" /> live
-                  </Badge>
-                </div>
-                {loading ? (
-                  <>
-                    <Skeleton className="h-3 w-24 mb-2" />
-                    <Skeleton className="h-8 w-20" />
-                  </>
-                ) : (
-                  <>
-                    <div className="text-caption text-neutral-2 font-medium uppercase tracking-wide">{k.label}</div>
-                    <div className="text-display text-neutral-1 mt-1 tabular-nums">{k.value}</div>
-                    {k.sub && <div className="text-caption text-neutral-3 mt-1">{k.sub}</div>}
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          ),
+                  {loading ? (
+                    <>
+                      <Skeleton className="h-3 w-24 mb-2 bg-white/30" />
+                      <Skeleton className="h-8 w-20 bg-white/30" />
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-caption font-medium text-white/85 uppercase tracking-wide">{k.label}</div>
+                      <div className="text-display text-white mt-1 tabular-nums">{k.value}</div>
+                      {k.sub && <div className="text-caption text-white/75 mt-1">{k.sub}</div>}
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          },
         )}
       </div>
 
@@ -298,36 +301,39 @@ export default function Overview() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-3">
         {(loading ? Array.from({ length: 8 }).map((_, i) => ({ _i: i } as any)) : kpis.filter((k) => !k.featured)).map(
           (k: Kpi, i: number) => {
-            const toneBg =
-              k.tone === "danger" ? "bg-destructive-bg text-destructive" :
-              k.tone === "warning" ? "bg-warning-bg text-warning" :
-              "bg-primary-bg text-primary";
+            const toneGradient =
+              k.tone === "danger" ? "from-rose-400 to-red-500" :
+              k.tone === "warning" ? "from-amber-400 to-orange-500" :
+              k.tone === "primary" ? "from-blue-500 to-indigo-500" :
+              "from-emerald-400 to-teal-500";
             const Inner = (
               <Card
-                className={`group h-full border-neutral-6 transition-all duration-300 animate-fade-in ${
-                  k.href ? "hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg cursor-pointer" : "hover:-translate-y-0.5 hover:shadow-md"
+                className={`group h-full border-0 text-white shadow-md transition-all duration-300 animate-fade-in bg-gradient-to-br ${toneGradient} relative overflow-hidden ${
+                  k.href ? "hover:-translate-y-0.5 hover:shadow-xl cursor-pointer" : "hover:-translate-y-0.5 hover:shadow-lg"
                 }`}
                 style={{ animationDelay: `${i * 40}ms` }}
               >
-                <CardContent className="p-4">
+                <div aria-hidden className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/15 blur-2xl" />
+                <div aria-hidden className="pointer-events-none absolute -right-10 -bottom-10 h-28 w-28 rounded-full bg-white/10" />
+                <CardContent className="relative p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <div className={`h-9 w-9 rounded-xl ${loading ? "bg-primary-bg text-primary" : toneBg} flex items-center justify-center transition-transform group-hover:scale-110`}>
-                      {loading ? <ShoppingBag className="h-4 w-4" /> : <k.icon className="h-4 w-4" />}
+                    <div className="h-9 w-9 rounded-xl bg-white/20 backdrop-blur-sm ring-1 ring-white/30 flex items-center justify-center transition-transform group-hover:scale-110">
+                      {loading ? <ShoppingBag className="h-4 w-4 text-white" /> : <k.icon className="h-4 w-4 text-white" />}
                     </div>
                     {k.href && (
-                      <ArrowUpRight className="h-4 w-4 text-neutral-4 transition-all group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      <ArrowUpRight className="h-4 w-4 text-white/80 transition-all group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     )}
                   </div>
                   {loading ? (
                     <>
-                      <Skeleton className="h-3 w-20 mb-2" />
-                      <Skeleton className="h-6 w-12" />
+                      <Skeleton className="h-3 w-20 mb-2 bg-white/30" />
+                      <Skeleton className="h-6 w-12 bg-white/30" />
                     </>
                   ) : (
                     <>
-                      <div className="text-caption text-neutral-2">{k.label}</div>
-                      <div className="text-h1 text-neutral-1 mt-1 tabular-nums">{k.value}</div>
-                      {k.sub && <div className="text-caption text-neutral-3 mt-1">{k.sub}</div>}
+                      <div className="text-caption text-white/85">{k.label}</div>
+                      <div className="text-h1 text-white mt-1 tabular-nums">{k.value}</div>
+                      {k.sub && <div className="text-caption text-white/75 mt-1">{k.sub}</div>}
                     </>
                   )}
                 </CardContent>
