@@ -169,6 +169,23 @@ export default function Overview() {
     })();
   }, []);
 
+  // Orders per day for the last 30 days (fixed daily bucket)
+  const ordersPerDay = useMemo(() => {
+    const now = new Date();
+    const buckets: Record<string, number> = {};
+    const order: string[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const k = isoDay(new Date(now.getTime() - i * 86400000));
+      buckets[k] = 0;
+      order.push(k);
+    }
+    orders.forEach((o) => {
+      const k = isoDay(new Date(o.created_at));
+      if (k in buckets) buckets[k] += 1;
+    });
+    return order.map((k) => ({ date: k.slice(5), orders: buckets[k] }));
+  }, [orders]);
+
   // Aggregate revenue/orders timeseries based on granularity
   const timeseries = useMemo(() => {
     if (!orders.length) return [] as { label: string; revenue: number; orders: number }[];
