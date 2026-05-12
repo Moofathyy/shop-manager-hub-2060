@@ -118,6 +118,15 @@ export default function Products() {
                 {categories.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
+            <ToggleGroup
+              type="single"
+              value={view}
+              onValueChange={(v) => v && setView(v as "table" | "cards")}
+              className="border border-neutral-6 rounded-input h-11"
+            >
+              <ToggleGroupItem value="cards" aria-label="Card view" className="h-11 px-3"><LayoutGrid className="h-4 w-4" /></ToggleGroupItem>
+              <ToggleGroupItem value="table" aria-label="Table view" className="h-11 px-3"><List className="h-4 w-4" /></ToggleGroupItem>
+            </ToggleGroup>
             {selected.size > 0 && (
               <div className="flex items-center gap-2 ml-auto">
                 <span className="text-caption text-neutral-2">{selected.size} selected</span>
@@ -130,6 +139,84 @@ export default function Products() {
               </div>
             )}
           </div>
+
+          {view === "cards" ? (
+            loading ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-72 rounded-card" />)}
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="py-16 text-center text-neutral-4">No products</div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                {paged.map((p) => {
+                  const imgs = Array.isArray(p.images) ? p.images : [];
+                  const cover = imgs[0];
+                  const isSelected = selected.has(p.id);
+                  return (
+                    <Card key={p.id} className={`overflow-hidden transition-shadow hover:shadow-md ${isSelected ? "ring-2 ring-primary" : ""}`}>
+                      <div className="relative aspect-square bg-neutral-7">
+                        {cover ? (
+                          <img src={cover} alt={p.title} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center text-neutral-4">
+                            <PackageIcon className="h-10 w-10" />
+                          </div>
+                        )}
+                        <div className="absolute top-2 left-2">
+                          <Checkbox checked={isSelected} onCheckedChange={() => toggle(p.id)} className="bg-background" />
+                        </div>
+                        <div className="absolute top-2 right-2">{statusBadge(p.status)}</div>
+                      </div>
+                      <CardContent className="p-3 space-y-2">
+                        <Link to={`/admin/products/${p.id}`} className="block">
+                          <div className="text-label text-neutral-1 line-clamp-2 hover:text-primary min-h-[2.5rem]">{p.title}</div>
+                        </Link>
+                        <div className="flex items-center justify-between text-caption text-neutral-2">
+                          <span className="truncate">{p.store_name ?? "—"}</span>
+                          <span className="text-neutral-3">·</span>
+                          <span className="truncate">{p.category_name ?? "—"}</span>
+                        </div>
+                        <div className="flex items-center justify-between pt-1">
+                          <div className="text-label text-neutral-1">${Number(p.price).toFixed(2)}</div>
+                          <div className={`text-caption ${p.stock > 0 ? "text-neutral-2" : "text-destructive"}`}>
+                            {p.stock > 0 ? `${p.stock} in stock` : "Out of stock"}
+                          </div>
+                        </div>
+                        <div className="flex gap-1 pt-1 border-t border-neutral-6 -mx-3 px-3">
+                          {p.status === "pending" && (
+                            <>
+                              <Button variant="ghost" size="sm" className="flex-1" onClick={() => setStatus([p.id], "approved", "approve")}>
+                                <CheckCircle2 className="h-4 w-4 text-success" /> Approve
+                              </Button>
+                              <Button variant="ghost" size="sm" className="flex-1" onClick={() => setStatus([p.id], "rejected", "reject")}>
+                                <XCircle className="h-4 w-4 text-destructive" /> Reject
+                              </Button>
+                            </>
+                          )}
+                          {p.status === "approved" && (
+                            <Button variant="ghost" size="sm" className="flex-1" onClick={() => setStatus([p.id], "unpublished", "unpublish")}>
+                              <EyeOff className="h-4 w-4" /> Unpublish
+                            </Button>
+                          )}
+                          {p.status === "unpublished" && (
+                            <Button variant="ghost" size="sm" className="flex-1" onClick={() => setStatus([p.id], "approved", "republish")}>
+                              <Eye className="h-4 w-4" /> Republish
+                            </Button>
+                          )}
+                          {(p.status === "rejected" || p.status === "out_of_stock") && (
+                            <Button variant="ghost" size="sm" className="flex-1" asChild>
+                              <Link to={`/admin/products/${p.id}`}>View details</Link>
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )
+          ) : (
 
           <div className="overflow-x-auto rounded-input border border-neutral-6">
             <Table>
