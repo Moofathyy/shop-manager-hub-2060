@@ -162,7 +162,7 @@ export default function Merchants() {
                     format(dateRange.from, "LLL d, y")
                   )
                 ) : (
-                  <span>Pick a date range</span>
+                  <span>Pick a date</span>
                 )}
                 {dateRange?.from && (
                   <X
