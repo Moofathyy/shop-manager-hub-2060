@@ -38,8 +38,7 @@ export default function Merchants() {
   const [search, setSearch] = useState("");
   const [country, setCountry] = useState("all");
   const [bizType, setBizType] = useState("all");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
   useEffect(() => {
     (async () => {
