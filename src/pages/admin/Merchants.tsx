@@ -81,26 +81,7 @@ export default function Merchants() {
     load();
   };
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      const [{ data: apps }, { data: sellers }, { data: profs }] = await Promise.all([
-        supabase.from("merchant_applications").select("*").order("created_at", { ascending: false }),
-        supabase.from("seller_profiles").select("user_id, store_name"),
-        supabase.from("profiles").select("id, full_name, country"),
-      ]);
-      const m = new Map((sellers ?? []).map((s) => [s.user_id, s.store_name]));
-      const pm = new Map((profs ?? []).map((p) => [p.id, p]));
-      setRows((apps ?? []).map((a) => ({
-        ...a,
-        documents: (a.documents as Application["documents"]) ?? [],
-        store_name: m.get(a.seller_id) ?? undefined,
-        applicant_name: pm.get(a.seller_id)?.full_name ?? "—",
-        country: pm.get(a.seller_id)?.country ?? "—",
-      } as Application)));
-      setLoading(false);
-    })();
-  }, []);
+  useEffect(() => { load(); }, []);
 
   const countries = useMemo(() => Array.from(new Set(rows.map((r) => r.country).filter((c): c is string => !!c && c !== "—"))).sort(), [rows]);
   const bizTypes = useMemo(() => Array.from(new Set(rows.map((r) => r.business_type).filter((c): c is string => !!c))).sort(), [rows]);
