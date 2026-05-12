@@ -5,8 +5,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Download, Ban, ShieldOff, ShieldCheck, CheckCircle2, XCircle } from "lucide-react";
+import { Search, Download, Ban, ShieldOff, ShieldCheck, CheckCircle2, XCircle, MoreHorizontal, Eye } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { downloadCSV } from "@/lib/csv";
 import { logAudit } from "@/lib/audit";
