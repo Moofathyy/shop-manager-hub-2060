@@ -3,13 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, LayoutGrid, List, FolderTree } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { logAudit } from "@/lib/audit";
 import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TablePagination } from "@/components/TablePagination";
 import { usePagination } from "@/hooks/usePagination";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface Category { id: string; name: string; slug: string; parent_id: string | null; sort_order: number; }
 
@@ -17,6 +18,7 @@ export default function Categories() {
   const [rows, setRows] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
+  const [view, setView] = useState<"table" | "cards">("cards");
 
   const load = async () => {
     setLoading(true);
@@ -46,7 +48,7 @@ export default function Categories() {
     load();
   };
 
-  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(rows, 10);
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(rows, view === "cards" ? 12 : 10);
 
   return (
     <div className="space-y-6">
@@ -57,39 +59,89 @@ export default function Categories() {
 
       <Card>
         <CardContent className="p-4 space-y-4">
-          <form onSubmit={add} className="flex gap-2">
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="New category name" className="max-w-md" />
-            <Button type="submit"><Plus className="h-4 w-4" /> Add</Button>
-          </form>
-          <div className="overflow-x-auto rounded-input border border-neutral-6">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-neutral-7 hover:bg-neutral-7">
-                  <TableHead>Name</TableHead>
-                  <TableHead>Slug</TableHead>
-                  <TableHead className="text-right">Order</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? <TableRow><TableCell colSpan={4}><Skeleton className="h-6" /></TableCell></TableRow> :
-                  rows.length === 0 ? <TableRow><TableCell colSpan={4} className="text-center text-neutral-4 py-8">No categories</TableCell></TableRow> :
-                    paged.map((c) => (
-                      <TableRow key={c.id}>
-                        <TableCell className="font-medium">{c.name}</TableCell>
-                        <TableCell className="text-neutral-2">{c.slug}</TableCell>
-                        <TableCell className="text-right">{c.sort_order}</TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" onClick={() => remove(c.id)}>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <form onSubmit={add} className="flex gap-2 flex-1">
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="New category name" className="max-w-md" />
+              <Button type="submit"><Plus className="h-4 w-4" /> Add</Button>
+            </form>
+            <ToggleGroup type="single" value={view} onValueChange={(v) => v && setView(v as "table" | "cards")}>
+              <ToggleGroupItem value="cards" aria-label="Card view"><LayoutGrid className="h-4 w-4" /></ToggleGroupItem>
+              <ToggleGroupItem value="table" aria-label="Table view"><List className="h-4 w-4" /></ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+
+          {view === "table" ? (
+            <div className="overflow-x-auto rounded-input border border-neutral-6">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-neutral-7 hover:bg-neutral-7">
+                    <TableHead>Name</TableHead>
+                    <TableHead>Slug</TableHead>
+                    <TableHead className="text-right">Order</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loading ? <TableRow><TableCell colSpan={4}><Skeleton className="h-6" /></TableCell></TableRow> :
+                    rows.length === 0 ? <TableRow><TableCell colSpan={4} className="text-center text-neutral-4 py-8">No categories</TableCell></TableRow> :
+                      paged.map((c) => (
+                        <TableRow key={c.id}>
+                          <TableCell className="font-medium">{c.name}</TableCell>
+                          <TableCell className="text-neutral-2">{c.slug}</TableCell>
+                          <TableCell className="text-right">{c.sort_order}</TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="sm" onClick={() => remove(c.id)}>
+                              <Trash2 className="h-4 w-4 text-destructive-foreground" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                  }
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div>
+              {loading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-32" />)}
+                </div>
+              ) : rows.length === 0 ? (
+                <div className="text-center text-neutral-4 py-12">No categories</div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {paged.map((c) => (
+                    <Card key={c.id} className="group hover:shadow-md transition-shadow border-neutral-6">
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="h-10 w-10 rounded-input bg-primary/10 flex items-center justify-center">
+                            <FolderTree className="h-5 w-5 text-primary" />
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => remove(c.id)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
                             <Trash2 className="h-4 w-4 text-destructive-foreground" />
                           </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                }
-              </TableBody>
-            </Table>
-          </div>
+                        </div>
+                        <div>
+                          <div className="font-medium text-neutral-1 truncate">{c.name}</div>
+                          <div className="text-sm text-neutral-2 truncate">/{c.slug}</div>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-neutral-3 pt-2 border-t border-neutral-6">
+                          <span>Order</span>
+                          <span className="font-medium text-neutral-2">#{c.sort_order}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
         </CardContent>
       </Card>
