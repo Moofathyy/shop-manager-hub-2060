@@ -295,6 +295,24 @@ export default function Overview() {
         </CardContent>
       </Card>
 
+      {/* Orders per day */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Orders per day (last 30 days)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={ordersPerDay}>
+              <CartesianGrid stroke="hsl(var(--neutral-6))" strokeDasharray="3 3" />
+              <XAxis dataKey="date" stroke="hsl(var(--neutral-4))" fontSize={12} />
+              <YAxis stroke="hsl(var(--neutral-4))" fontSize={12} allowDecimals={false} />
+              <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--neutral-6))" }} />
+              <Bar dataKey="orders" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} name="Orders" />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
       {/* Categories donut + signups */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-1">
