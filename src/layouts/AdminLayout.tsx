@@ -1,5 +1,6 @@
 import { Outlet, useLocation, Link } from "react-router-dom";
-import { Bell, Search, LogOut, ChevronRight } from "lucide-react";
+import { Search, LogOut, ChevronRight } from "lucide-react";
+import { NotificationsPopover } from "@/components/NotificationsPopover";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useAuth } from "@/hooks/useAuth";
