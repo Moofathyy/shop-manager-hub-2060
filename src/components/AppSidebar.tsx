@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Users, Store, ShoppingBag, Package, Tag, FileSearch, ShieldCheck,
-  DollarSign, MessageSquare, LifeBuoy,
+  DollarSign, MessageSquare, LifeBuoy, Megaphone,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -25,6 +25,7 @@ const ops = [
   { title: "Finance", url: "/admin/finance", icon: DollarSign },
   { title: "Reviews", url: "/admin/reviews", icon: MessageSquare },
   { title: "Support", url: "/admin/support", icon: LifeBuoy },
+  { title: "Marketing", url: "/admin/marketing", icon: Megaphone },
   { title: "Audit Log", url: "/admin/audit", icon: FileSearch },
 ];
 
