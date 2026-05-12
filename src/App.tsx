@@ -26,7 +26,7 @@ import SellerDetail from "./pages/admin/SellerDetail";
 import ShopperDetail from "./pages/admin/ShopperDetail";
 import OrderDetail from "./pages/admin/OrderDetail";
 import Marketing from "./pages/admin/marketing/Marketing";
-import Notifications from "./pages/admin/Notifications";
+
 import Analytics from "./pages/admin/analytics/Analytics";
 import Logistics from "./pages/admin/logistics/Logistics";
 
@@ -61,7 +61,7 @@ const App = () => (
               <Route path="marketing" element={<Marketing />} />
               <Route path="analytics" element={<Analytics />} />
               <Route path="logistics" element={<Logistics />} />
-              <Route path="notifications" element={<Notifications />} />
+              
               <Route path="audit" element={<Audit />} />
             </Route>
             <Route path="*" element={<NotFound />} />
