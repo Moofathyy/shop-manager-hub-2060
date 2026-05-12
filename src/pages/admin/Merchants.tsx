@@ -242,7 +242,56 @@ export default function Merchants() {
           </CardContent>
         </Card>
       )}
+
+      <RejectDialog
+        open={!!rejectFor}
+        onOpenChange={(o) => !o && setRejectFor(null)}
+        applicant={rejectFor?.applicant_name ?? rejectFor?.store_name ?? ""}
+        onSubmit={async (reason) => {
+          if (rejectFor) await decide(rejectFor, "rejected", reason);
+          setRejectFor(null);
+        }}
+      />
     </div>
+  );
+}
+
+function RejectDialog({
+  open, onOpenChange, applicant, onSubmit,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  applicant: string;
+  onSubmit: (reason: string) => void | Promise<void>;
+}) {
+  const [reason, setReason] = useState("");
+  useEffect(() => { if (!open) setReason(""); }, [open]);
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Reject application</DialogTitle>
+          <DialogDescription>
+            Provide a rejection reason for {applicant || "this applicant"}. This will be shown to the seller and recorded in the audit log.
+          </DialogDescription>
+        </DialogHeader>
+        <Textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="e.g. KYC documents are unreadable. Please re-upload a clearer copy."
+          rows={5}
+          maxLength={500}
+          autoFocus
+        />
+        <div className="text-caption text-neutral-4 text-right">{reason.length}/500</div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="destructive" disabled={reason.trim().length < 5} onClick={() => onSubmit(reason.trim())}>
+            <XCircle className="h-4 w-4" /> Reject application
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
