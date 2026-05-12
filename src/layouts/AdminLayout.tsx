@@ -38,9 +38,7 @@ export default function AdminLayout() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-4" />
               <Input placeholder="Search…" className="h-10 pl-9 text-body" />
             </div>
-            <Button variant="ghost" size="icon" className="text-neutral-2">
-              <Bell className="h-5 w-5" />
-            </Button>
+            <NotificationsPopover />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 p-1 pr-3 rounded-full hover:bg-neutral-7">
