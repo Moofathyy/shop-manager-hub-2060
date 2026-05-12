@@ -113,20 +113,20 @@ export default function Dashboard() {
     <div className="space-y-6">
       {/* KPI cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <KpiCard icon={DollarSign} label="GMV" value={fmtCurrency(kpis.gmv)} delta={kpis.gmvDelta} sub="vs prev 30d" />
-        <KpiCard icon={DollarSign} label="Net Revenue" value={fmtCurrency(kpis.netRevenue)} sub="GMV − refunds" />
-        <KpiCard icon={ShoppingBag} label="AOV" value={fmtCurrency(kpis.aov)} sub={`${kpis.orderCount} orders`} />
-        <KpiCard icon={Users} label="Shoppers" value={kpis.totalShoppers.toLocaleString()} delta={kpis.shoppersDelta} sub={`${kpis.newShoppers} new`} />
-        <KpiCard icon={Store} label="Sellers" value={kpis.totalSellers.toLocaleString()} sub={`${kpis.activeSellers} active`} />
-        <KpiCard icon={Percent} label="Conv. Rate" value={`${kpis.conversionRate}%`} sub="estimated" />
+        <KpiCard index={0} icon={DollarSign} label="GMV" value={fmtCurrency(kpis.gmv)} delta={kpis.gmvDelta} sub="vs prev 30d" />
+        <KpiCard index={1} icon={DollarSign} label="Net Revenue" value={fmtCurrency(kpis.netRevenue)} sub="GMV − refunds" />
+        <KpiCard index={2} icon={ShoppingBag} label="AOV" value={fmtCurrency(kpis.aov)} sub={`${kpis.orderCount} orders`} />
+        <KpiCard index={3} icon={Users} label="Shoppers" value={kpis.totalShoppers.toLocaleString()} delta={kpis.shoppersDelta} sub={`${kpis.newShoppers} new`} />
+        <KpiCard index={4} icon={Store} label="Sellers" value={kpis.totalSellers.toLocaleString()} sub={`${kpis.activeSellers} active`} />
+        <KpiCard index={5} icon={Percent} label="Conv. Rate" value={`${kpis.conversionRate}%`} sub="estimated" />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <KpiCard icon={ShoppingCart} label="Cart Abandonment" value={`${kpis.cartAbandonment}%`} sub="estimated" />
-        <KpiCard icon={Users} label="New shoppers" value={kpis.newShoppers.toLocaleString()} sub="last 30d" />
-        <KpiCard icon={Users} label="Returning" value={kpis.returningShoppers.toLocaleString()} sub="purchased again" />
-        <KpiCard icon={Store} label="New sellers" value={kpis.newSellers.toLocaleString()} sub="last 30d" />
-        <KpiCard icon={ShoppingBag} label="Orders" value={kpis.orderCount.toLocaleString()} delta={kpis.ordersDelta} sub="vs prev 30d" />
-        <KpiCard icon={DollarSign} label="Refunded" value={fmtCurrency(kpis.gmv - kpis.netRevenue)} sub="approved refunds" />
+        <KpiCard index={0} icon={ShoppingCart} label="Cart Abandonment" value={`${kpis.cartAbandonment}%`} sub="estimated" />
+        <KpiCard index={1} icon={Users} label="New shoppers" value={kpis.newShoppers.toLocaleString()} sub="last 30d" />
+        <KpiCard index={2} icon={Users} label="Returning" value={kpis.returningShoppers.toLocaleString()} sub="purchased again" />
+        <KpiCard index={3} icon={Store} label="New sellers" value={kpis.newSellers.toLocaleString()} sub="last 30d" />
+        <KpiCard index={4} icon={ShoppingBag} label="Orders" value={kpis.orderCount.toLocaleString()} delta={kpis.ordersDelta} sub="vs prev 30d" />
+        <KpiCard index={5} icon={DollarSign} label="Refunded" value={fmtCurrency(kpis.gmv - kpis.netRevenue)} sub="approved refunds" />
       </div>
 
       {/* Time series */}
