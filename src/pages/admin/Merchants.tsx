@@ -68,8 +68,8 @@ export default function Merchants() {
     if (tab !== "all" && r.status !== tab) return false;
     if (country !== "all" && r.country !== country) return false;
     if (bizType !== "all" && r.business_type !== bizType) return false;
-    if (dateFrom && new Date(r.created_at) < new Date(dateFrom)) return false;
-    if (dateTo && new Date(r.created_at) > new Date(dateTo + "T23:59:59")) return false;
+    if (dateRange?.from && new Date(r.created_at) < new Date(dateRange.from.setHours(0,0,0,0))) return false;
+    if (dateRange?.to && new Date(r.created_at) > new Date(new Date(dateRange.to).setHours(23,59,59,999))) return false;
     if (search) {
       const s = search.toLowerCase();
       if (!(r.store_name?.toLowerCase().includes(s) || r.applicant_name?.toLowerCase().includes(s))) return false;
