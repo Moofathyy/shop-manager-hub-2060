@@ -38,11 +38,11 @@ export default function Auth() {
             <form onSubmit={signIn} className="space-y-4">
               <div className="space-y-2">
                 <label className="text-label text-neutral-2">Email</label>
-                <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@example.com" />
+                <Input type="text" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@example.com" />
               </div>
               <div className="space-y-2">
                 <label className="text-label text-neutral-2">Password</label>
-                <Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+                <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
               </div>
               <Button type="submit" disabled={busy} className="w-full">
                 {busy ? "Signing in…" : "Sign in"}
