@@ -76,7 +76,7 @@ export default function Merchants() {
     }
     return true;
   });
-  const filterKey = `${tab}-${country}-${bizType}-${dateFrom}-${dateTo}-${search}`;
+  const filterKey = `${tab}-${country}-${bizType}-${dateRange?.from?.toISOString() ?? ""}-${dateRange?.to?.toISOString() ?? ""}-${search}`;
   const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 10, filterKey);
 
   return (
