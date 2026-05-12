@@ -125,16 +125,21 @@ export default function Merchants() {
 
       <Card>
         <CardContent className="p-4 grid gap-3 md:grid-cols-5">
-          <Input placeholder="Search applicant or store…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input
+            placeholder="Search applicant or store…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="md:col-span-2 h-11 rounded-input"
+          />
           <Select value={country} onValueChange={setCountry}>
-            <SelectTrigger><SelectValue placeholder="Country" /></SelectTrigger>
+            <SelectTrigger className="h-11 rounded-input"><SelectValue placeholder="Country" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All countries</SelectItem>
               {countries.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={bizType} onValueChange={setBizType}>
-            <SelectTrigger><SelectValue placeholder="Business type" /></SelectTrigger>
+            <SelectTrigger className="h-11 rounded-input"><SelectValue placeholder="Business type" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All business types</SelectItem>
               {bizTypes.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -145,7 +150,7 @@ export default function Merchants() {
               <Button
                 variant="outline"
                 className={cn(
-                  "md:col-span-2 justify-start text-left font-normal h-10",
+                  "justify-start text-left font-normal h-11 rounded-input",
                   !dateRange?.from && "text-muted-foreground",
                 )}
               >
