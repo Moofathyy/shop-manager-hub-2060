@@ -4,7 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, Eye, CalendarIcon } from "lucide-react";
+import { Check, X, Eye, CalendarIcon, CheckCircle2, XCircle } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/hooks/use-toast";
+import { logAudit } from "@/lib/audit";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -39,27 +45,43 @@ export default function Merchants() {
   const [country, setCountry] = useState("all");
   const [bizType, setBizType] = useState("all");
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [rejectFor, setRejectFor] = useState<Application | null>(null);
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      const [{ data: apps }, { data: sellers }, { data: profs }] = await Promise.all([
-        supabase.from("merchant_applications").select("*").order("created_at", { ascending: false }),
-        supabase.from("seller_profiles").select("user_id, store_name"),
-        supabase.from("profiles").select("id, full_name, country"),
-      ]);
-      const m = new Map((sellers ?? []).map((s) => [s.user_id, s.store_name]));
-      const pm = new Map((profs ?? []).map((p) => [p.id, p]));
-      setRows((apps ?? []).map((a) => ({
-        ...a,
-        documents: (a.documents as Application["documents"]) ?? [],
-        store_name: m.get(a.seller_id) ?? undefined,
-        applicant_name: pm.get(a.seller_id)?.full_name ?? "—",
-        country: pm.get(a.seller_id)?.country ?? "—",
-      } as Application)));
-      setLoading(false);
-    })();
-  }, []);
+  const load = async () => {
+    setLoading(true);
+    const [{ data: apps }, { data: sellers }, { data: profs }] = await Promise.all([
+      supabase.from("merchant_applications").select("*").order("created_at", { ascending: false }),
+      supabase.from("seller_profiles").select("user_id, store_name"),
+      supabase.from("profiles").select("id, full_name, country"),
+    ]);
+    const m = new Map((sellers ?? []).map((s) => [s.user_id, s.store_name]));
+    const pm = new Map((profs ?? []).map((p) => [p.id, p]));
+    setRows((apps ?? []).map((a) => ({
+      ...a,
+      documents: (a.documents as Application["documents"]) ?? [],
+      store_name: m.get(a.seller_id) ?? undefined,
+      applicant_name: pm.get(a.seller_id)?.full_name ?? "—",
+      country: pm.get(a.seller_id)?.country ?? "—",
+    } as Application)));
+    setLoading(false);
+  };
+
+  const decide = async (a: Application, status: "approved" | "rejected", reason?: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error } = await supabase.from("merchant_applications").update({
+      status,
+      decision_reason: reason ?? null,
+      decided_at: new Date().toISOString(),
+      decided_by: user?.id ?? null,
+    }).eq("id", a.id);
+    if (error) return toast({ title: "Failed", description: error.message, variant: "destructive" });
+    await supabase.from("seller_profiles").update({ approval_status: status }).eq("user_id", a.seller_id);
+    await logAudit(`merchant.${status}`, "merchant_application", a.id, { reason });
+    toast({ title: `Application ${status}` });
+    load();
+  };
+
+  useEffect(() => { load(); }, []);
 
   const countries = useMemo(() => Array.from(new Set(rows.map((r) => r.country).filter((c): c is string => !!c && c !== "—"))).sort(), [rows]);
   const bizTypes = useMemo(() => Array.from(new Set(rows.map((r) => r.business_type).filter((c): c is string => !!c))).sort(), [rows]);
@@ -195,7 +217,19 @@ export default function Merchants() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button asChild size="sm" variant="ghost"><Link to={`/admin/merchants/${a.id}`}><Eye className="h-4 w-4" /> Review</Link></Button>
+                        <div className="flex justify-end gap-1">
+                          {a.status === "pending" && (
+                            <>
+                              <Button size="sm" variant="ghost" onClick={() => decide(a, "approved")} title="Approve">
+                                <CheckCircle2 className="h-4 w-4 text-success" />
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => setRejectFor(a)} title="Reject">
+                                <XCircle className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </>
+                          )}
+                          <Button asChild size="sm" variant="ghost"><Link to={`/admin/merchants/${a.id}`}><Eye className="h-4 w-4" /> Review</Link></Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
@@ -208,7 +242,56 @@ export default function Merchants() {
           </CardContent>
         </Card>
       )}
+
+      <RejectDialog
+        open={!!rejectFor}
+        onOpenChange={(o) => !o && setRejectFor(null)}
+        applicant={rejectFor?.applicant_name ?? rejectFor?.store_name ?? ""}
+        onSubmit={async (reason) => {
+          if (rejectFor) await decide(rejectFor, "rejected", reason);
+          setRejectFor(null);
+        }}
+      />
     </div>
+  );
+}
+
+function RejectDialog({
+  open, onOpenChange, applicant, onSubmit,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  applicant: string;
+  onSubmit: (reason: string) => void | Promise<void>;
+}) {
+  const [reason, setReason] = useState("");
+  useEffect(() => { if (!open) setReason(""); }, [open]);
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Reject application</DialogTitle>
+          <DialogDescription>
+            Provide a rejection reason for {applicant || "this applicant"}. This will be shown to the seller and recorded in the audit log.
+          </DialogDescription>
+        </DialogHeader>
+        <Textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="e.g. KYC documents are unreadable. Please re-upload a clearer copy."
+          rows={5}
+          maxLength={500}
+          autoFocus
+        />
+        <div className="text-caption text-neutral-4 text-right">{reason.length}/500</div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="destructive" disabled={reason.trim().length < 5} onClick={() => onSubmit(reason.trim())}>
+            <XCircle className="h-4 w-4" /> Reject application
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
