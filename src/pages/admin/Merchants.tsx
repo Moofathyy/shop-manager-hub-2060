@@ -217,7 +217,19 @@ export default function Merchants() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button asChild size="sm" variant="ghost"><Link to={`/admin/merchants/${a.id}`}><Eye className="h-4 w-4" /> Review</Link></Button>
+                        <div className="flex justify-end gap-1">
+                          {a.status === "pending" && (
+                            <>
+                              <Button size="sm" variant="ghost" onClick={() => decide(a, "approved")} title="Approve">
+                                <CheckCircle2 className="h-4 w-4 text-success" />
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => setRejectFor(a)} title="Reject">
+                                <XCircle className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </>
+                          )}
+                          <Button asChild size="sm" variant="ghost"><Link to={`/admin/merchants/${a.id}`}><Eye className="h-4 w-4" /> Review</Link></Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
