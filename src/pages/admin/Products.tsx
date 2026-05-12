@@ -26,6 +26,7 @@ interface Product {
   category_id: string | null;
   seller_id: string;
   created_at: string;
+  images?: any;
   store_name?: string;
   category_name?: string;
 }
