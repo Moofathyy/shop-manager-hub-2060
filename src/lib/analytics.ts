@@ -319,7 +319,7 @@ export async function runCustomReport(
     iList.forEach((i: any) => bump(i.product_id, { gmv: Number(i.price) * Number(i.qty), orders: 1 }));
   } else if (dimension === "category") {
     // need product->category map
-    const productIds = [...new Set(iList.map((i: any) => i.product_id as string))];
+    const productIds = [...new Set(iList.map((i: any) => i.product_id as string))] as string[];
     const { data: prods } = await supabase.from("products").select("id, category_id").in("id", productIds);
     const catBy = new Map<string, string>((prods ?? []).map((p: any) => [p.id, p.category_id]));
     iList.forEach((i: any) => {
