@@ -312,16 +312,16 @@ export async function runCustomReport(
   if (dimension === "seller") {
     oList.forEach((o: any) => bump(o.seller_id, { gmv: Number(o.total || 0), orders: 1 }));
   } else if (dimension === "country") {
-    oList.forEach((o: any) => bump(countryById.get(o.shopper_id) ?? "Unknown", { gmv: Number(o.total || 0), orders: 1 }));
+    oList.forEach((o: any) => bump((countryById.get(o.shopper_id) as string) ?? "Unknown", { gmv: Number(o.total || 0), orders: 1 }));
   } else if (dimension === "day") {
     oList.forEach((o: any) => bump(format(new Date(o.created_at), "yyyy-MM-dd"), { gmv: Number(o.total || 0), orders: 1 }));
   } else if (dimension === "product") {
     iList.forEach((i: any) => bump(i.product_id, { gmv: Number(i.price) * Number(i.qty), orders: 1 }));
   } else if (dimension === "category") {
     // need product->category map
-    const productIds = [...new Set(iList.map((i: any) => i.product_id))];
+    const productIds = [...new Set(iList.map((i: any) => i.product_id as string))];
     const { data: prods } = await supabase.from("products").select("id, category_id").in("id", productIds);
-    const catBy = new Map((prods ?? []).map((p: any) => [p.id, p.category_id]));
+    const catBy = new Map<string, string>((prods ?? []).map((p: any) => [p.id, p.category_id]));
     iList.forEach((i: any) => {
       const cat = catBy.get(i.product_id) ?? "uncategorized";
       bump(cat, { gmv: Number(i.price) * Number(i.qty), orders: 1 });
@@ -333,7 +333,7 @@ export async function runCustomReport(
     if (!o) return;
     let key: string | undefined;
     if (dimension === "seller") key = o.seller_id;
-    else if (dimension === "country") key = countryById.get(o.shopper_id) ?? "Unknown";
+    else if (dimension === "country") key = (countryById.get(o.shopper_id) as string) ?? "Unknown";
     else if (dimension === "day") key = format(new Date(o.created_at), "yyyy-MM-dd");
     if (key && groups.has(key)) {
       const cur = groups.get(key)!;
