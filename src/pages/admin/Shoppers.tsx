@@ -175,24 +175,69 @@ export default function Shoppers() {
   );
 }
 
-function ConfirmAction({ label, title, description, onConfirm, destructive }: { label: React.ReactNode; title: string; description: string; onConfirm: () => void; destructive?: boolean }) {
+function ShopperActions({
+  shopper, onReactivate, onSuspend, onBan,
+}: {
+  shopper: Shopper;
+  onReactivate: () => void;
+  onSuspend: () => void;
+  onBan: () => void;
+}) {
+  const [confirm, setConfirm] = useState<null | "suspend" | "ban">(null);
+  const dialogs: Record<"suspend" | "ban", { title: string; description: string; destructive?: boolean; onConfirm: () => void }> = {
+    suspend: { title: "Suspend shopper?", description: "They will not be able to place orders until reactivated.", onConfirm: onSuspend },
+    ban: { title: "Ban shopper?", description: "This permanently blocks the account.", destructive: true, onConfirm: onBan },
+  };
+  const active = confirm ? dialogs[confirm] : null;
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="sm">{label}</Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} className={destructive ? "bg-destructive text-destructive-foreground" : ""}>
-            Confirm
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem asChild>
+            <Link to={`/admin/shoppers/${shopper.id}`}>
+              <Eye className="h-4 w-4" /> View details
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          {shopper.status !== "active" && (
+            <DropdownMenuItem onClick={onReactivate}>
+              <ShieldCheck className="h-4 w-4 text-success" /> Reactivate
+            </DropdownMenuItem>
+          )}
+          {shopper.status === "active" && (
+            <DropdownMenuItem onClick={() => setConfirm("suspend")}>
+              <ShieldOff className="h-4 w-4" /> Suspend
+            </DropdownMenuItem>
+          )}
+          {shopper.status !== "banned" && (
+            <DropdownMenuItem onClick={() => setConfirm("ban")} className="text-destructive focus:text-destructive">
+              <Ban className="h-4 w-4" /> Ban
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <AlertDialog open={!!confirm} onOpenChange={(o) => !o && setConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{active?.title}</AlertDialogTitle>
+            <AlertDialogDescription>{active?.description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => { active?.onConfirm(); setConfirm(null); }}
+              className={active?.destructive ? "bg-destructive text-destructive-foreground" : ""}
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
