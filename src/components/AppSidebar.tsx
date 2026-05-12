@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Users, Store, ShoppingBag, Package, Tag, FileSearch, ShieldCheck,
-  DollarSign, MessageSquare, LifeBuoy, Megaphone,
+  DollarSign, MessageSquare, LifeBuoy, Megaphone, Bell,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -10,6 +10,7 @@ import {
 
 const main = [
   { title: "Overview", url: "/admin", icon: LayoutDashboard, end: true },
+  { title: "Notifications", url: "/admin/notifications", icon: Bell },
   { title: "Shoppers", url: "/admin/shoppers", icon: Users },
   { title: "Sellers", url: "/admin/sellers", icon: Store },
   { title: "Merchant Approvals", url: "/admin/merchants", icon: ShieldCheck },
