@@ -80,15 +80,16 @@ Deno.serve(async (req) => {
     }
     log.push(`shoppers: ${shopperIds.length}, sellers: ${sellerIds.length}`);
 
-    // 3) Profiles update (country, status)
+    // 3) Profiles upsert (country, status)
     for (const id of [...shopperIds, ...sellerIds]) {
-      await admin.from("profiles").update({
+      await admin.from("profiles").upsert({
+        id,
         country: rand(COUNTRIES),
         status: Math.random() < 0.9 ? "active" : "suspended",
         full_name: `${rand(FIRST)} ${rand(LAST)}`,
         phone: `+20${randInt(1000000000, 1999999999)}`,
         last_login: daysAgo(randInt(0, 30)),
-      }).eq("id", id);
+      }, { onConflict: "id" });
     }
 
     // 4) Roles
