@@ -222,19 +222,29 @@ export default function Merchants() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          {a.status === "pending" && (
-                            <>
-                              <Button size="sm" variant="ghost" onClick={() => decide(a, "approved")} title="Approve">
-                                <CheckCircle2 className="h-4 w-4 text-success" />
-                              </Button>
-                              <Button size="sm" variant="ghost" onClick={() => setRejectFor(a)} title="Reject">
-                                <XCircle className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </>
-                          )}
-                          <Button asChild size="sm" variant="ghost"><Link to={`/admin/merchants/${a.id}`}><Eye className="h-4 w-4" /> Review</Link></Button>
-                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => navigate(`/admin/merchants/${a.id}`)}>
+                              <Eye className="h-4 w-4" /> Review
+                            </DropdownMenuItem>
+                            {a.status === "pending" && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => decide(a, "approved")}>
+                                  <CheckCircle2 className="h-4 w-4 text-success" /> Approve
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setRejectFor(a)} className="text-destructive focus:text-destructive">
+                                  <XCircle className="h-4 w-4" /> Reject
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   );
