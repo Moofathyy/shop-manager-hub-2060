@@ -4,12 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import {
   Users, Store, ShoppingBag, DollarSign, ShieldCheck, Package,
-  LifeBuoy, Flag, AlertTriangle, TrendingUp, ArrowRight,
+  LifeBuoy, Flag, AlertTriangle, TrendingUp, ArrowUpRight, Sparkles,
 } from "lucide-react";
 import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
 } from "recharts";
 
@@ -19,9 +20,10 @@ interface Kpi {
   label: string;
   value: string;
   icon: React.ElementType;
-  tone?: "default" | "warning" | "danger";
+  tone?: "default" | "warning" | "danger" | "primary";
   href?: string;
   sub?: string;
+  featured?: boolean;
 }
 
 const DONUT_COLORS = [
@@ -44,7 +46,6 @@ const startOfDay = (d: Date) => {
 const isoDay = (d: Date) => d.toISOString().slice(0, 10);
 
 const isoWeek = (d: Date) => {
-  // ISO week label: yyyy-Www
   const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   const dayNum = tmp.getUTCDay() || 7;
   tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum);
@@ -55,13 +56,20 @@ const isoWeek = (d: Date) => {
 
 const isoMonth = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 
+const tooltipStyle = {
+  borderRadius: 12,
+  border: "1px solid hsl(var(--neutral-6))",
+  background: "hsl(var(--background))",
+  boxShadow: "0 10px 30px -10px hsl(var(--neutral-1) / 0.18)",
+  fontSize: 12,
+};
+
 export default function Overview() {
   const [loading, setLoading] = useState(true);
   const [granularity, setGranularity] = useState<Granularity>("daily");
 
   const [kpis, setKpis] = useState<Kpi[]>([]);
   const [orders, setOrders] = useState<{ total: number; created_at: string; seller_id: string }[]>([]);
-  const [commissionRates, setCommissionRates] = useState<Record<string, number>>({});
   const [signups, setSignups] = useState<{ date: string; shoppers: number; sellers: number }[]>([]);
   const [topCategories, setTopCategories] = useState<{ name: string; value: number }[]>([]);
 
@@ -98,10 +106,8 @@ export default function Overview() {
       const items = itemsRes.data ?? [];
       const cats = categoriesRes.data ?? [];
 
-      // Commission map by seller
       const rateMap: Record<string, number> = {};
       sellers.forEach((s: any) => { rateMap[s.user_id] = Number(s.commission_rate ?? 10); });
-      setCommissionRates(rateMap);
 
       const gmvToday = ordersData.filter((o) => new Date(o.created_at) >= sinceToday).reduce((s, o) => s + Number(o.total), 0);
       const gmvWeek = ordersData.filter((o) => new Date(o.created_at) >= sinceWeek).reduce((s, o) => s + Number(o.total), 0);
@@ -119,23 +125,22 @@ export default function Overview() {
       ).size;
 
       setKpis([
-        { label: "GMV — Today", value: fmtMoney(gmvToday), icon: DollarSign, sub: "Gross merchandise value" },
-        { label: "GMV — 7 days", value: fmtMoney(gmvWeek), icon: TrendingUp },
-        { label: "GMV — 30 days", value: fmtMoney(gmvMonth), icon: TrendingUp },
-        { label: "Platform Revenue (30d)", value: fmtMoney(commissionMonth), icon: DollarSign, sub: "Commission earned" },
+        { label: "GMV — Today", value: fmtMoney(gmvToday), icon: DollarSign, sub: "Gross merchandise value", tone: "primary", featured: true },
+        { label: "GMV — 7 days", value: fmtMoney(gmvWeek), icon: TrendingUp, tone: "primary", featured: true },
+        { label: "GMV — 30 days", value: fmtMoney(gmvMonth), icon: TrendingUp, tone: "primary", featured: true },
+        { label: "Platform Revenue (30d)", value: fmtMoney(commissionMonth), icon: Sparkles, sub: "Commission earned", tone: "primary", featured: true },
         { label: "Active Shoppers", value: String(activeShoppers), icon: Users, sub: "Logged in last 30d" },
         { label: "Active Sellers", value: String(sellersWithLiveProducts), icon: Store, sub: "With ≥1 live product" },
+        { label: "Total Orders", value: String(ordersData.length), icon: ShoppingBag, sub: "All-time" },
         { label: "Pending Merchants", value: String(merchPendingRes.count ?? 0), icon: ShieldCheck, tone: "warning", href: "/admin/merchants" },
         { label: "Pending Products", value: String(prodPendingRes.count ?? 0), icon: Package, tone: "warning", href: "/admin/products" },
         { label: "Open Tickets", value: String(ticketsRes.count ?? 0), icon: LifeBuoy, tone: "warning", href: "/admin/support" },
         { label: "Flagged Reviews", value: String(reviewsFlaggedRes.count ?? 0), icon: Flag, tone: "warning", href: "/admin/reviews" },
         { label: "Suspicious Txns", value: String(txnFlaggedRes.count ?? 0), icon: AlertTriangle, tone: "danger", href: "/admin/finance" },
-        { label: "Total Orders", value: String(ordersData.length), icon: ShoppingBag },
       ]);
 
       setOrders(ordersData);
 
-      // Signups over last 14 days
       const sgn: { date: string; shoppers: number; sellers: number }[] = [];
       for (let i = 13; i >= 0; i--) {
         const d = new Date(now.getTime() - i * 86400000);
@@ -148,7 +153,6 @@ export default function Overview() {
       }
       setSignups(sgn);
 
-      // Top 5 categories by sales (revenue from order_items)
       const prodToCat: Record<string, string | null> = {};
       products.forEach((p: any) => { prodToCat[p.id] = p.category_id; });
       const catName: Record<string, string> = {};
@@ -169,7 +173,6 @@ export default function Overview() {
     })();
   }, []);
 
-  // Orders per day for the last 30 days (fixed daily bucket)
   const ordersPerDay = useMemo(() => {
     const now = new Date();
     const buckets: Record<string, number> = {};
@@ -186,30 +189,25 @@ export default function Overview() {
     return order.map((k) => ({ date: k.slice(5), orders: buckets[k] }));
   }, [orders]);
 
-  // Aggregate revenue/orders timeseries based on granularity
   const timeseries = useMemo(() => {
     if (!orders.length) return [] as { label: string; revenue: number; orders: number }[];
     const buckets: Record<string, { revenue: number; orders: number }> = {};
     const keyer = granularity === "daily" ? isoDay : granularity === "weekly" ? isoWeek : isoMonth;
-
     const now = new Date();
     const points = granularity === "daily" ? 14 : granularity === "weekly" ? 12 : 6;
     const stepDays = granularity === "daily" ? 1 : granularity === "weekly" ? 7 : 30;
-
     const order: string[] = [];
     for (let i = points - 1; i >= 0; i--) {
       const d = new Date(now.getTime() - i * stepDays * 86400000);
       const k = keyer(d);
       if (!buckets[k]) { buckets[k] = { revenue: 0, orders: 0 }; order.push(k); }
     }
-
     orders.forEach((o) => {
       const k = keyer(new Date(o.created_at));
       if (!buckets[k]) return;
       buckets[k].revenue += Number(o.total);
       buckets[k].orders += 1;
     });
-
     return order.map((k) => ({
       label: granularity === "daily" ? k.slice(5) : k,
       revenue: Math.round(buckets[k].revenue),
@@ -219,52 +217,137 @@ export default function Overview() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-display text-neutral-1">Overview</h1>
-        <p className="text-body text-neutral-2 mt-1">Real-time snapshot of platform health.</p>
+      {/* HERO HEADER */}
+      <div className="relative overflow-hidden rounded-2xl border border-neutral-6 bg-gradient-to-br from-primary-bg via-background to-accent/10 p-6 md:p-8">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/20 blur-3xl"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -bottom-32 -left-16 h-56 w-56 rounded-full bg-accent/20 blur-3xl"
+        />
+        <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-neutral-6 bg-background/70 px-3 py-1 text-caption text-neutral-2 backdrop-blur-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+              </span>
+              Live data
+            </div>
+            <h1 className="mt-3 text-display text-neutral-1">Overview</h1>
+            <p className="text-body text-neutral-2 mt-1 max-w-xl">
+              Real-time snapshot of platform health, performance, and approvals.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-caption text-neutral-3">
+            <span>Updated</span>
+            <Badge variant="outline" className="font-normal">
+              {new Date().toLocaleString(undefined, { hour: "2-digit", minute: "2-digit", month: "short", day: "numeric" })}
+            </Badge>
+          </div>
+        </div>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-        {(loading ? Array.from({ length: 12 }).map((_, i) => ({ _i: i } as any)) : kpis).map((k: Kpi, i: number) => {
-          const toneBg =
-            k.tone === "danger" ? "bg-destructive-bg text-destructive" :
-            k.tone === "warning" ? "bg-warning-bg text-warning" :
-            "bg-primary-bg text-primary";
-          const Inner = (
-            <Card className={k.href ? "hover:border-primary transition-colors cursor-pointer h-full" : "h-full"}>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className={`h-9 w-9 rounded-input ${loading ? "bg-primary-bg text-primary" : toneBg} flex items-center justify-center`}>
-                    {loading ? <ShoppingBag className="h-4 w-4" /> : <k.icon className="h-4 w-4" />}
+      {/* FEATURED KPI ROW (GMV & Revenue) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {(loading ? Array.from({ length: 4 }).map((_, i) => ({ _i: i } as any)) : kpis.filter((k) => k.featured)).map(
+          (k: Kpi, i: number) => (
+            <Card
+              key={i}
+              className="group relative overflow-hidden border-neutral-6 animate-fade-in"
+              style={{ animationDelay: `${i * 60}ms` }}
+            >
+              <div
+                aria-hidden
+                className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-accent/8 opacity-90"
+              />
+              <div
+                aria-hidden
+                className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-primary/15 blur-2xl transition-all duration-500 group-hover:scale-125 group-hover:bg-primary/25"
+              />
+              <CardContent className="relative p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-light text-primary-foreground shadow-md shadow-primary/25">
+                    {loading ? <DollarSign className="h-5 w-5" /> : <k.icon className="h-5 w-5" />}
                   </div>
-                  {k.href && <ArrowRight className="h-4 w-4 text-neutral-3" />}
+                  <Badge variant="outline" className="border-success/30 bg-success-bg text-success font-medium">
+                    <TrendingUp className="h-3 w-3" /> live
+                  </Badge>
                 </div>
                 {loading ? (
                   <>
-                    <Skeleton className="h-3 w-20 mb-2" />
-                    <Skeleton className="h-7 w-16" />
+                    <Skeleton className="h-3 w-24 mb-2" />
+                    <Skeleton className="h-8 w-20" />
                   </>
                 ) : (
                   <>
-                    <div className="text-caption text-neutral-2">{k.label}</div>
-                    <div className="text-h1 text-neutral-1 mt-1">{k.value}</div>
+                    <div className="text-caption text-neutral-2 font-medium uppercase tracking-wide">{k.label}</div>
+                    <div className="text-display text-neutral-1 mt-1 tabular-nums">{k.value}</div>
                     {k.sub && <div className="text-caption text-neutral-3 mt-1">{k.sub}</div>}
                   </>
                 )}
               </CardContent>
             </Card>
-          );
-          return k.href ? <Link key={i} to={k.href}>{Inner}</Link> : <div key={i}>{Inner}</div>;
-        })}
+          ),
+        )}
       </div>
 
-      {/* Revenue & Orders timeseries */}
-      <Card>
+      {/* SECONDARY KPI ROW */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-3">
+        {(loading ? Array.from({ length: 8 }).map((_, i) => ({ _i: i } as any)) : kpis.filter((k) => !k.featured)).map(
+          (k: Kpi, i: number) => {
+            const toneBg =
+              k.tone === "danger" ? "bg-destructive-bg text-destructive" :
+              k.tone === "warning" ? "bg-warning-bg text-warning" :
+              "bg-primary-bg text-primary";
+            const Inner = (
+              <Card
+                className={`group h-full border-neutral-6 transition-all duration-300 animate-fade-in ${
+                  k.href ? "hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg cursor-pointer" : "hover:-translate-y-0.5 hover:shadow-md"
+                }`}
+                style={{ animationDelay: `${i * 40}ms` }}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className={`h-9 w-9 rounded-xl ${loading ? "bg-primary-bg text-primary" : toneBg} flex items-center justify-center transition-transform group-hover:scale-110`}>
+                      {loading ? <ShoppingBag className="h-4 w-4" /> : <k.icon className="h-4 w-4" />}
+                    </div>
+                    {k.href && (
+                      <ArrowUpRight className="h-4 w-4 text-neutral-4 transition-all group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    )}
+                  </div>
+                  {loading ? (
+                    <>
+                      <Skeleton className="h-3 w-20 mb-2" />
+                      <Skeleton className="h-6 w-12" />
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-caption text-neutral-2">{k.label}</div>
+                      <div className="text-h1 text-neutral-1 mt-1 tabular-nums">{k.value}</div>
+                      {k.sub && <div className="text-caption text-neutral-3 mt-1">{k.sub}</div>}
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            );
+            return k.href ? <Link key={i} to={k.href}>{Inner}</Link> : <div key={i}>{Inner}</div>;
+          },
+        )}
+      </div>
+
+      {/* REVENUE & ORDERS */}
+      <Card className="border-neutral-6 overflow-hidden">
+        <div aria-hidden className="h-1 w-full bg-gradient-to-r from-primary via-primary-light to-accent" />
         <CardHeader className="flex flex-row items-center justify-between gap-4">
-          <CardTitle>Revenue & orders over time</CardTitle>
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 rounded-full bg-primary" />
+            <CardTitle>Revenue & orders over time</CardTitle>
+          </div>
           <Tabs value={granularity} onValueChange={(v) => setGranularity(v as Granularity)}>
-            <TabsList>
+            <TabsList className="bg-neutral-7">
               <TabsTrigger value="daily">Daily</TabsTrigger>
               <TabsTrigger value="weekly">Weekly</TabsTrigger>
               <TabsTrigger value="monthly">Monthly</TabsTrigger>
@@ -274,50 +357,76 @@ export default function Overview() {
         <CardContent>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={timeseries}>
-                <CartesianGrid stroke="hsl(var(--neutral-6))" strokeDasharray="3 3" />
-                <XAxis dataKey="label" stroke="hsl(var(--neutral-4))" fontSize={12} />
-                <YAxis stroke="hsl(var(--neutral-4))" fontSize={12} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--neutral-6))" }} />
-                <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={false} name="Revenue" />
-              </LineChart>
+              <AreaChart data={timeseries}>
+                <defs>
+                  <linearGradient id="revFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="hsl(var(--neutral-6))" strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="label" stroke="hsl(var(--neutral-4))" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="hsl(var(--neutral-4))" fontSize={12} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => `$${v.toLocaleString()}`} />
+                <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2.5} fill="url(#revFill)" name="Revenue" />
+              </AreaChart>
             </ResponsiveContainer>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={timeseries}>
-                <CartesianGrid stroke="hsl(var(--neutral-6))" strokeDasharray="3 3" />
-                <XAxis dataKey="label" stroke="hsl(var(--neutral-4))" fontSize={12} />
-                <YAxis stroke="hsl(var(--neutral-4))" fontSize={12} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--neutral-6))" }} />
-                <Bar dataKey="orders" fill="hsl(var(--primary-light))" radius={[6, 6, 0, 0]} name="Orders" />
+                <defs>
+                  <linearGradient id="barFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(var(--primary-light))" stopOpacity={1} />
+                    <stop offset="100%" stopColor="hsl(var(--primary-light))" stopOpacity={0.5} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="hsl(var(--neutral-6))" strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="label" stroke="hsl(var(--neutral-4))" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="hsl(var(--neutral-4))" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "hsl(var(--neutral-7))" }} />
+                <Bar dataKey="orders" fill="url(#barFill)" radius={[8, 8, 0, 0]} name="Orders" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
 
-      {/* Orders per day */}
-      <Card>
+      {/* ORDERS PER DAY */}
+      <Card className="border-neutral-6 overflow-hidden">
+        <div aria-hidden className="h-1 w-full bg-gradient-to-r from-accent via-primary to-success" />
         <CardHeader>
-          <CardTitle>Orders per day (last 30 days)</CardTitle>
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 rounded-full bg-accent" />
+            <CardTitle>Orders per day · last 30 days</CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={ordersPerDay}>
-              <CartesianGrid stroke="hsl(var(--neutral-6))" strokeDasharray="3 3" />
-              <XAxis dataKey="date" stroke="hsl(var(--neutral-4))" fontSize={12} />
-              <YAxis stroke="hsl(var(--neutral-4))" fontSize={12} allowDecimals={false} />
-              <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--neutral-6))" }} />
-              <Bar dataKey="orders" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} name="Orders" />
+              <defs>
+                <linearGradient id="opdFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={1} />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.55} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid stroke="hsl(var(--neutral-6))" strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="date" stroke="hsl(var(--neutral-4))" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis stroke="hsl(var(--neutral-4))" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "hsl(var(--neutral-7))" }} />
+              <Bar dataKey="orders" fill="url(#opdFill)" radius={[6, 6, 0, 0]} name="Orders" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
-      {/* Categories donut + signups */}
+      {/* CATEGORIES DONUT + SIGNUPS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="lg:col-span-1">
+        <Card className="lg:col-span-1 border-neutral-6 overflow-hidden">
+          <div aria-hidden className="h-1 w-full bg-gradient-to-r from-primary to-accent" />
           <CardHeader>
-            <CardTitle>Top 5 categories by sales</CardTitle>
+            <div className="flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-primary" />
+              <CardTitle>Top 5 categories</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
             {topCategories.length === 0 ? (
@@ -325,34 +434,35 @@ export default function Overview() {
             ) : (
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
-                  <Pie data={topCategories} dataKey="value" nameKey="name" innerRadius={55} outerRadius={95} paddingAngle={2}>
+                  <Pie data={topCategories} dataKey="value" nameKey="name" innerRadius={60} outerRadius={100} paddingAngle={3} stroke="hsl(var(--background))" strokeWidth={3}>
                     {topCategories.map((_, idx) => <Cell key={idx} fill={DONUT_COLORS[idx % DONUT_COLORS.length]} />)}
                   </Pie>
-                  <Tooltip
-                    contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--neutral-6))" }}
-                    formatter={(v: number) => `$${v.toLocaleString()}`}
-                  />
-                  <Legend />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => `$${v.toLocaleString()}`} />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
                 </PieChart>
               </ResponsiveContainer>
             )}
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 border-neutral-6 overflow-hidden">
+          <div aria-hidden className="h-1 w-full bg-gradient-to-r from-accent to-primary-light" />
           <CardHeader>
-            <CardTitle>New signups: shoppers vs sellers (14d)</CardTitle>
+            <div className="flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-accent" />
+              <CardTitle>New signups · shoppers vs sellers (14d)</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={signups}>
-                <CartesianGrid stroke="hsl(var(--neutral-6))" strokeDasharray="3 3" />
-                <XAxis dataKey="date" stroke="hsl(var(--neutral-4))" fontSize={12} />
-                <YAxis stroke="hsl(var(--neutral-4))" fontSize={12} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--neutral-6))" }} />
-                <Legend />
-                <Line type="monotone" dataKey="shoppers" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={false} />
-                <Line type="monotone" dataKey="sellers" stroke="hsl(var(--accent))" strokeWidth={2.5} dot={false} />
+                <CartesianGrid stroke="hsl(var(--neutral-6))" strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="date" stroke="hsl(var(--neutral-4))" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="hsl(var(--neutral-4))" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
+                <Line type="monotone" dataKey="shoppers" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={false} activeDot={{ r: 5 }} />
+                <Line type="monotone" dataKey="sellers" stroke="hsl(var(--accent))" strokeWidth={2.5} dot={false} activeDot={{ r: 5 }} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
