@@ -5,9 +5,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Download, XCircle, Truck, CheckCircle2 } from "lucide-react";
+import { Search, Download, XCircle, Truck, CheckCircle2, MoreHorizontal, Eye } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { downloadCSV } from "@/lib/csv";
 import { logAudit } from "@/lib/audit";
 import { toast } from "@/hooks/use-toast";
