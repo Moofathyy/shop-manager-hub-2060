@@ -71,7 +71,7 @@ export default function Products() {
     if (q && !r.title.toLowerCase().includes(q.toLowerCase())) return false;
     return true;
   });
-  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, 10, `${q}|${tab}|${category}`);
+  const { paged, page, pageSize, total, setPage, setPageSize } = usePagination(filtered, view === "cards" ? 12 : 10, `${q}|${tab}|${category}|${view}`);
 
   const setStatus = async (ids: string[], status: string, action: string) => {
     const { error } = await supabase.from("products").update({ status: status as "pending" | "approved" | "rejected" | "unpublished" | "out_of_stock" }).in("id", ids);
