@@ -26,6 +26,7 @@ import SellerDetail from "./pages/admin/SellerDetail";
 import ShopperDetail from "./pages/admin/ShopperDetail";
 import OrderDetail from "./pages/admin/OrderDetail";
 import Marketing from "./pages/admin/marketing/Marketing";
+import AdminUsers from "./pages/admin/AdminUsers";
 
 import Analytics from "./pages/admin/analytics/Analytics";
 import Logistics from "./pages/admin/logistics/Logistics";
@@ -63,6 +64,7 @@ const App = () => (
               <Route path="logistics" element={<Logistics />} />
               
               <Route path="audit" element={<Audit />} />
+              <Route path="admin-users" element={<AdminUsers />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
