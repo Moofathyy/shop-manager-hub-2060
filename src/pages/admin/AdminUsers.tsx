@@ -112,10 +112,12 @@ export default function AdminUsers() {
         .eq("id", editing.id);
       if (pErr) throw pErr;
 
-      const current = new Set(editing.roles.filter((r) => (ADMIN_ROLES as readonly string[]).includes(r)));
-      const next = new Set(draftRoles);
-      const toAdd = [...next].filter((r) => !current.has(r));
-      const toRemove = [...current].filter((r) => !next.has(r));
+      const current = new Set<AdminRole>(
+        editing.roles.filter((r): r is AdminRole => (ADMIN_ROLES as readonly string[]).includes(r))
+      );
+      const next = new Set<AdminRole>(draftRoles);
+      const toAdd: AdminRole[] = [...next].filter((r) => !current.has(r));
+      const toRemove: AdminRole[] = [...current].filter((r) => !next.has(r));
 
       if (toRemove.length) {
         const { error } = await supabase
