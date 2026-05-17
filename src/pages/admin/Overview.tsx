@@ -301,47 +301,39 @@ export default function Overview() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-3">
         {(loading ? Array.from({ length: 8 }).map((_, i) => ({ _i: i } as any)) : kpis.filter((k) => !k.featured)).map(
           (k: Kpi, i: number) => {
-            const tone =
-              k.tone === "danger"
-                ? { dot: "bg-rose-500", chip: "bg-rose-50 text-rose-600 ring-rose-100", bar: "from-rose-400 to-red-500", glow: "bg-rose-500/10" }
-                : k.tone === "warning"
-                ? { dot: "bg-amber-500", chip: "bg-amber-50 text-amber-600 ring-amber-100", bar: "from-amber-400 to-orange-500", glow: "bg-amber-500/10" }
-                : k.tone === "primary"
-                ? { dot: "bg-primary", chip: "bg-primary-bg text-primary ring-primary/10", bar: "from-primary to-primary-light", glow: "bg-primary/10" }
-                : { dot: "bg-emerald-500", chip: "bg-emerald-50 text-emerald-600 ring-emerald-100", bar: "from-emerald-400 to-teal-500", glow: "bg-emerald-500/10" };
+            const toneGradient =
+              k.tone === "danger" ? "from-rose-400 to-red-500" :
+              k.tone === "warning" ? "from-amber-400 to-orange-500" :
+              k.tone === "primary" ? "from-blue-500 to-indigo-500" :
+              "from-emerald-400 to-teal-500";
             const Inner = (
               <Card
-                className={`group relative h-full overflow-hidden border border-neutral-6/70 bg-card shadow-sm transition-all duration-300 animate-fade-in ${
-                  k.href ? "hover:-translate-y-0.5 hover:shadow-lg hover:border-neutral-6 cursor-pointer" : "hover:-translate-y-0.5 hover:shadow-md"
+                className={`group h-full border-0 text-white shadow-md transition-all duration-300 animate-fade-in bg-gradient-to-br ${toneGradient} relative overflow-hidden ${
+                  k.href ? "hover:-translate-y-0.5 hover:shadow-xl cursor-pointer" : "hover:-translate-y-0.5 hover:shadow-lg"
                 }`}
                 style={{ animationDelay: `${i * 40}ms` }}
               >
-                <div aria-hidden className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${tone.bar} opacity-80`} />
-                <div aria-hidden className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full blur-2xl ${tone.glow}`} />
+                <div aria-hidden className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/15 blur-2xl" />
+                <div aria-hidden className="pointer-events-none absolute -right-10 -bottom-10 h-28 w-28 rounded-full bg-white/10" />
                 <CardContent className="relative p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <div className={`h-9 w-9 rounded-xl ring-1 flex items-center justify-center transition-transform group-hover:scale-105 ${tone.chip}`}>
-                      {loading ? <ShoppingBag className="h-4 w-4" /> : <k.icon className="h-4 w-4" />}
+                    <div className="h-9 w-9 rounded-xl bg-white/20 backdrop-blur-sm ring-1 ring-white/30 flex items-center justify-center transition-transform group-hover:scale-110">
+                      {loading ? <ShoppingBag className="h-4 w-4 text-white" /> : <k.icon className="h-4 w-4 text-white" />}
                     </div>
                     {k.href && (
-                      <ArrowUpRight className="h-4 w-4 text-neutral-4 transition-all group-hover:text-neutral-1 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      <ArrowUpRight className="h-4 w-4 text-white/80 transition-all group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     )}
                   </div>
                   {loading ? (
                     <>
-                      <Skeleton className="h-3 w-20 mb-2" />
-                      <Skeleton className="h-6 w-12" />
+                      <Skeleton className="h-3 w-20 mb-2 bg-white/30" />
+                      <Skeleton className="h-6 w-12 bg-white/30" />
                     </>
                   ) : (
                     <>
-                      <div className="text-caption font-medium text-neutral-2 uppercase tracking-wide">{k.label}</div>
-                      <div className="text-h1 text-neutral-1 mt-1 tabular-nums">{k.value}</div>
-                      {k.sub && (
-                        <div className="flex items-center gap-1.5 mt-1.5">
-                          <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
-                          <span className="text-caption text-neutral-2">{k.sub}</span>
-                        </div>
-                      )}
+                      <div className="text-caption text-white/85">{k.label}</div>
+                      <div className="text-h1 text-white mt-1 tabular-nums">{k.value}</div>
+                      {k.sub && <div className="text-caption text-white/75 mt-1">{k.sub}</div>}
                     </>
                   )}
                 </CardContent>
