@@ -14,6 +14,7 @@ const main = [
   { title: "Shoppers", url: "/admin/shoppers", icon: Users },
   { title: "Sellers", url: "/admin/sellers", icon: Store },
   { title: "Merchant Approvals", url: "/admin/merchants", icon: ShieldCheck },
+  { title: "Admin Users", url: "/admin/admin-users", icon: UserCog },
 ];
 
 const catalog = [
