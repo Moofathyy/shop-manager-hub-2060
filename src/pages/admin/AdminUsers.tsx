@@ -122,7 +122,7 @@ export default function AdminUsers() {
           .from("user_roles")
           .delete()
           .eq("user_id", editing.id)
-          .in("role", toRemove as any);
+          .in("role", toRemove as any[]);
         if (error) throw error;
       }
       if (toAdd.length) {
